@@ -44,7 +44,7 @@ func TestPostLeaseContract(t *testing.T) {
 		return json.Marshal(append(leaseContractsBeforeRequest, newLeaseContract))
 	})
 
-	if !utils.Contains(db.GetLeaseContracts(), newLeaseContract) {
+	if !utils.ContainsLeaseContract(db.GetLeaseContracts(), newLeaseContract) {
 		t.Error("Lease contract was not saved.")
 	}
 }
@@ -97,7 +97,7 @@ func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
 		t.Error("Lease contract was not updated")
 	}
 
-	if utils.Contains(db.GetLeaseContracts(), leaseContractBeforeRequest) {
+	if utils.ContainsLeaseContract(db.GetLeaseContracts(), leaseContractBeforeRequest) {
 		t.Error("Old lease contract was not removed.")
 	}
 }
@@ -115,7 +115,7 @@ func TestDeleteLeaseContract(t *testing.T) {
 		return json.Marshal(leaseContractToBeRemoved)
 	})
 
-	if utils.Contains(db.GetLeaseContracts(), leaseContractToBeRemoved) {
+	if utils.ContainsLeaseContract(db.GetLeaseContracts(), leaseContractToBeRemoved) {
 		t.Error("Lease contract was not removed.")
 	}
 }

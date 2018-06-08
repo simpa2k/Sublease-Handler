@@ -22,7 +22,6 @@ func findLeaseContractById(leaseContracts []domain.LeaseContract, id int) (*doma
 	return nil, false
 }
 
-
 func (d *mockDatabase) CreateLeaseContract(leaseContract domain.LeaseContract) []domain.LeaseContract {
 	d.leaseContracts = append(d.leaseContracts, leaseContract)
 	return d.leaseContracts
@@ -30,7 +29,7 @@ func (d *mockDatabase) CreateLeaseContract(leaseContract domain.LeaseContract) [
 
 func (d *mockDatabase) UpdateLeaseContract(id int, leaseContractUpdate domain.LeaseContractUpdate) (domain.LeaseContract, bool) {
 	if i := indexOfLeaseContract(d.leaseContracts, id); i != -1 {
-		d.leaseContracts[i].UpdateWithValuesFrom(leaseContractUpdate)
+		d.leaseContracts[i].UpdateLeastContractWithValuesFrom(leaseContractUpdate)
 		return d.leaseContracts[i], true
 	}
 	return domain.LeaseContract{}, false

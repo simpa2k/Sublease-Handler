@@ -38,7 +38,7 @@ func (lc *LeaseContract) Equal(other *LeaseContract) bool {
 		lc.Apartment.Equal(&other.Apartment)
 }
 
-func (lc *LeaseContract) UpdateWithValuesFrom(leaseContractUpdate LeaseContractUpdate) {
+func (lc *LeaseContract) UpdateLeastContractWithValuesFrom(leaseContractUpdate LeaseContractUpdate) {
 	if leaseContractUpdate.From != nil {
 		lc.From = *leaseContractUpdate.From
 	}

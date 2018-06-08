@@ -12,10 +12,10 @@ type Database interface {
 	DeleteApartment(id int) domain.Apartment
 
 	GetOwners() []domain.Owner
-	GetOwner(id int) domain.Owner
+	GetOwner(id int) (domain.Owner, bool)
 	CreateOwner(owner domain.Owner) []domain.Owner
-	UpdateOwner(id int, newOwner domain.Owner) domain.Owner
-	DeleteOwner(id int) domain.Owner
+	UpdateOwner(id int, ownerUpdate domain.OwnerUpdate) (domain.Owner, bool)
+	DeleteOwner(id int) (domain.Owner, bool)
 
 	GetTenants() []domain.Tenant
 	GetTenant(id int) domain.Tenant

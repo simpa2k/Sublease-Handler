@@ -6,19 +6,19 @@ func (d actualDatabase) GetOwners() []domain.Owner {
 	return make([]domain.Owner, 0, 0)
 }
 
-func (d actualDatabase) GetOwner(id int) domain.Owner {
-	return domain.Owner{}
+func (d actualDatabase) GetOwner(id int) (domain.Owner, bool) {
+	return domain.Owner{}, false
 }
 
-func (d actualDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
+func (d *actualDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
 	return make([]domain.Owner, 0, 0)
 }
 
-func (d actualDatabase) UpdateOwner(id int, newOwner domain.Owner) domain.Owner {
-	return domain.Owner{}
+func (d *actualDatabase) UpdateOwner(id int, ownerUpdate domain.OwnerUpdate) (domain.Owner, bool) {
+	return domain.Owner{}, false
 }
 
-func (d actualDatabase) DeleteOwner(id int) domain.Owner {
-	return domain.Owner{}
+func (d *actualDatabase) DeleteOwner(id int) (domain.Owner, bool) {
+	return domain.Owner{}, false
 }
 

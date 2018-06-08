@@ -55,7 +55,7 @@ func (s Server) setupOwnerRoutes(r *mux.Router) {
 	r.HandleFunc("/owner", getOwnersHandler(s.database)).Methods("GET")
 	r.HandleFunc("/owner/{id}", getOwnerHandler(s.database)).Methods("GET")
 	r.HandleFunc("/owner", createOwnerHandler(s.database)).Methods("POST")
-	r.HandleFunc("/owner/{id}", updateOwnerHandler(s.database)).Methods("PUT")
+	r.HandleFunc("/owner", updateOwnerHandler(s.database)).Methods("PUT")
 	r.HandleFunc("/owner/{id}", deleteOwnerHandler(s.database)).Methods("DELETE")
 }
 

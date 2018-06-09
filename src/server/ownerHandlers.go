@@ -45,7 +45,7 @@ func updateOwnerHandler(database database.Database) func(w http.ResponseWriter, 
 
 		var ssn socialSecurityNumber.SocialSecurityNumber
 		_ = json.NewDecoder(strings.NewReader(queryValues.Get("socialsecuritynumber"))).Decode(&ssn)
-		var apartments []domain.Apartment
+		var apartments []int
 		_ = json.NewDecoder(strings.NewReader(queryValues.Get("apartments"))).Decode(&apartments)
 
 		ownerUpdate := domain.OwnerUpdate{

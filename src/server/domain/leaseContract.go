@@ -14,9 +14,9 @@ type LeaseContract struct {
 type LeaseContractUpdate struct {
 	From      *time.Time
 	To        *time.Time
-	Owner     *Owner
-	Tenant    *Tenant
-	Apartment *Apartment
+	Owner     *int
+	Tenant    *int
+	Apartment *int
 }
 
 func CreateLeaseContract(from time.Time, to time.Time, owner Owner, tenant Tenant, apartment Apartment) LeaseContract {
@@ -37,22 +37,3 @@ func (lc *LeaseContract) Equal(other *LeaseContract) bool {
 		lc.Tenant.Equal(&other.Tenant) &&
 		lc.Apartment.Equal(&other.Apartment)
 }
-
-func (lc *LeaseContract) UpdateLeastContractWithValuesFrom(leaseContractUpdate LeaseContractUpdate) {
-	if leaseContractUpdate.From != nil {
-		lc.From = *leaseContractUpdate.From
-	}
-	if leaseContractUpdate.To != nil {
-		lc.To = *leaseContractUpdate.To
-	}
-	if leaseContractUpdate.Owner != nil {
-		lc.Owner = *leaseContractUpdate.Owner
-	}
-	if leaseContractUpdate.Tenant != nil {
-		lc.Tenant = *leaseContractUpdate.Tenant
-	}
-	if leaseContractUpdate.Apartment != nil {
-		lc.Apartment = *leaseContractUpdate.Apartment
-	}
-}
-

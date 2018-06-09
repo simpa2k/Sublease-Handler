@@ -29,7 +29,7 @@ func (d *mockDatabase) CreateLeaseContract(leaseContract domain.LeaseContract) [
 
 func (d *mockDatabase) UpdateLeaseContract(id int, leaseContractUpdate domain.LeaseContractUpdate) (domain.LeaseContract, bool) {
 	if i := indexOfLeaseContract(d.leaseContracts, id); i != -1 {
-		d.leaseContracts[i].UpdateLeastContractWithValuesFrom(leaseContractUpdate)
+		d.UpdateLeaseContractWithValuesFrom(&d.leaseContracts[i], leaseContractUpdate)
 		return d.leaseContracts[i], true
 	}
 	return domain.LeaseContract{}, false
@@ -42,6 +42,30 @@ func indexOfLeaseContract(leaseContracts []domain.LeaseContract, id int) (int) {
 		}
 	}
 	return -1
+}
+
+func (d *mockDatabase) UpdateLeaseContractWithValuesFrom(lc *domain.LeaseContract, leaseContractUpdate domain.LeaseContractUpdate) {
+	if leaseContractUpdate.From != nil {
+		lc.From = *leaseContractUpdate.From
+	}
+	if leaseContractUpdate.To != nil {
+		lc.To = *leaseContractUpdate.To
+	}
+	if leaseContractUpdate.Owner != nil {
+		if owner, found := findOwnerById(d.owners, *leaseContractUpdate.Owner); found {
+			lc.Owner = *owner
+		}
+	}
+	if leaseContractUpdate.Tenant != nil {
+		if tenant, found := findTenantById(d.tenants, *leaseContractUpdate.Tenant); found {
+			lc.Tenant = *tenant
+		}
+	}
+	if leaseContractUpdate.Apartment != nil {
+		if apartment, found := findApartmentById(d.apartments, *leaseContractUpdate.Apartment); found {
+			lc.Apartment = *apartment
+		}
+	}
 }
 
 func (d* mockDatabase) DeleteLeaseContract(id int) (domain.LeaseContract, bool) {

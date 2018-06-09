@@ -6,6 +6,15 @@ func (d mockDatabase) GetTenants() []domain.Tenant {
 	return d.tenants
 }
 
+func findTenantById(tenants []domain.Tenant, id int) (*domain.Tenant, bool) {
+	for _, tenant := range tenants {
+		if tenant.Id == id {
+			return &tenant, true
+		}
+	}
+	return nil, false
+}
+
 func (d mockDatabase) GetTenant(id int) domain.Tenant {
 	return domain.Tenant{}
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 	"subLease/test/utils/mockDatabase"
 	"bytes"
+	"strconv"
 )
 
 func TestGetLeaseContracts(t *testing.T) {
@@ -28,9 +29,9 @@ func TestPostLeaseContract(t *testing.T) {
 	newLeaseContract := domain.LeaseContract {
 		From: time.Date(2018, time.July, 15, 0, 0, 0, 0, time.Local),
 		To: time.Date(2019, time.July, 15, 0, 0, 0, 0, time.Local),
-		Owner: mockDatabase.GetSampleOwner(mockDatabase.GetSampleApartment()),
-		Tenant: mockDatabase.GetSampleTenant(),
-		Apartment: mockDatabase.GetSampleApartment(),
+		Owner: mockDatabase.GetSampleOwner1(mockDatabase.GetSampleApartment1()),
+		Tenant: mockDatabase.GetSampleTenant1(),
+		Apartment: mockDatabase.GetSampleApartment1(),
 	}
 
 	jsonBytes, _ := json.Marshal(newLeaseContract)
@@ -52,18 +53,9 @@ func TestPostLeaseContract(t *testing.T) {
 func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
 	newFrom := time.Date(2018, time.July, 16, 0, 0, 0, 0, time.Local)
 	newTo := time.Date(2019, time.July, 16, 0, 0, 0, 0, time.Local)
-
-	newOwner := mockDatabase.GetSampleOwner(mockDatabase.GetSampleApartment())
-	newOwner.FirstName = "Sumon"
-	newOwnerJSONBytes, _ := json.Marshal(newOwner)
-
-	newTenant := mockDatabase.GetSampleTenant()
-	newTenant.FirstName = "Slemon"
-	newTenantJSONBytes, _ := json.Marshal(newTenant)
-
-	newApartment := mockDatabase.GetSampleApartment()
-	newApartment.Number = 1001
-	newApartmentJSONBytes, _ := json.Marshal(newApartment)
+	newOwner := mockDatabase.GetSampleOwner2(mockDatabase.GetSampleApartment2())
+	newTenant := mockDatabase.GetSampleTenant2()
+	newApartment := mockDatabase.GetSampleApartment2()
 
 	newLeaseContract := domain.CreateLeaseContract(
 		newFrom,
@@ -81,9 +73,9 @@ func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
 		{"id", "1"},
 		{"from", newFrom.String()},
 		{"to", newTo.String()},
-		{"owner", string(newOwnerJSONBytes)},
-		{"tenant", string(newTenantJSONBytes)},
-		{"apartment", string(newApartmentJSONBytes)},
+		{"owner", strconv.Itoa(newOwner.Id)},
+		{"tenant", strconv.Itoa(newTenant.Id)},
+		{"apartment", strconv.Itoa(newApartment.Id)},
 	})
 
 	res := utils.RequestToServer(r, "PUT", completeUrl, nil)

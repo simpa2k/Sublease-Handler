@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"github.com/gorilla/mux"
 	"subLease/src/server/domain"
-	"strings"
 	"time"
 )
 
@@ -51,19 +50,16 @@ func updateLeaseContractHandler(database database.Database) func(w http.Response
 			panic(err)
 		}
 
-		var owner domain.Owner
-		_ = json.NewDecoder(strings.NewReader(queryValues.Get("owner"))).Decode(&owner)
-		var tenant domain.Tenant
-		_ = json.NewDecoder(strings.NewReader(queryValues.Get("tenant"))).Decode(&tenant)
-		var apartment domain.Apartment
-		_ = json.NewDecoder(strings.NewReader(queryValues.Get("apartment"))).Decode(&apartment)
+		ownerId, err := strconv.Atoi(queryValues.Get("owner"))
+		tenantId, err := strconv.Atoi(queryValues.Get("tenant"))
+		apartmentId, err := strconv.Atoi(queryValues.Get("apartment"))
 
 		leaseContractUpdate := domain.LeaseContractUpdate {
 			From: &from,
 			To: &to,
-			Owner: &owner,
-			Tenant: &tenant,
-			Apartment: &apartment,
+			Owner: &ownerId,
+			Tenant: &tenantId,
+			Apartment: &apartmentId,
 		}
 
 		updatedLeaseContract, foundLeaseContractWithId := database.UpdateLeaseContract(id, leaseContractUpdate)

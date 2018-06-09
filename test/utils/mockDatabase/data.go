@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GetSampleApartment() domain.Apartment {
+func GetSampleApartment1() domain.Apartment {
 	apartment := domain.CreateApartment(
 		1104,
 		"Norra Stationsgatan",
@@ -19,7 +19,20 @@ func GetSampleApartment() domain.Apartment {
 	return apartment
 }
 
-func GetSampleOwner(apartment domain.Apartment) domain.Owner {
+func GetSampleApartment2() domain.Apartment {
+	apartment := domain.CreateApartment(
+		1103,
+		"Norra Stationsgatan",
+		119,
+		"113 64",
+		"Stockholm",
+	)
+	apartment.Id = 2
+
+	return apartment
+}
+
+func GetSampleOwner1(apartment domain.Apartment) domain.Owner {
 	owner := domain.CreateOwner(
 		"Simon",
 		"Olofsson",
@@ -34,7 +47,22 @@ func GetSampleOwner(apartment domain.Apartment) domain.Owner {
 	return owner
 }
 
-func GetSampleTenant() domain.Tenant {
+func GetSampleOwner2(apartment domain.Apartment) domain.Owner {
+	owner := domain.CreateOwner(
+		"Sumon",
+		"Olafsen",
+		socialSecurityNumber.Create(
+			time.Date(19890, time.July, 2, 0, 0, 0, 0, time.Local),
+			"071",
+			1),
+		[]domain.Apartment {apartment},
+	)
+	owner.Id = 2
+
+	return owner
+}
+
+func GetSampleTenant1() domain.Tenant {
 	tenant := domain.Tenant{
 		FirstName: "Simpa",
 		LastName: "Lainen",
@@ -45,6 +73,21 @@ func GetSampleTenant() domain.Tenant {
 		),
 	}
 	tenant.Id = 1
+
+	return tenant
+}
+
+func GetSampleTenant2() domain.Tenant {
+	tenant := domain.Tenant{
+		FirstName: "Slemon	",
+		LastName: "Slemsson",
+		SocialSecurityNumber: socialSecurityNumber.Create(
+			time.Date(1066, time.October, 14, 0, 0, 0, 0, time.Local),
+			"071",
+			1,
+		),
+	}
+	tenant.Id = 2
 
 	return tenant
 }

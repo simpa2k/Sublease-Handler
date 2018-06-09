@@ -56,10 +56,10 @@ func TestUpdateOwnerUpdatesAllValues(t *testing.T) {
 	newSocialSecurityNumber := socialSecurityNumber.Create(time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local), "017", 1)
 	newSocialSecurityNumberJSONBytes, _ := json.Marshal(newSocialSecurityNumber)
 
-	newApartment := mockDatabase.GetSampleApartment()
-	newApartment.Number = 1001
+	newApartment := mockDatabase.GetSampleApartment2()
 	newApartments := []domain.Apartment {newApartment}
-	newApartmentsJSONBytes, _ := json.Marshal(newApartments)
+	newApartmentIds := []int {newApartment.Id}
+	newApartmentIdsJSONBytes, _ := json.Marshal(newApartmentIds)
 
 	newOwner := domain.CreateOwner(
 		newFirstName,
@@ -77,7 +77,7 @@ func TestUpdateOwnerUpdatesAllValues(t *testing.T) {
 		{"firstname", newFirstName},
 		{"lastname", newLastName},
 		{"socialsecuritynumber", string(newSocialSecurityNumberJSONBytes)},
-		{"apartments", string(newApartmentsJSONBytes)},
+		{"apartments", string(newApartmentIdsJSONBytes)},
 	})
 
 	res := utils.RequestToServer(r, "PUT", completeUrl, nil)

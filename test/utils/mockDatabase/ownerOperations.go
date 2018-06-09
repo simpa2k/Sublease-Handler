@@ -29,7 +29,7 @@ func (d* mockDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
 
 func (d *mockDatabase) UpdateOwner(id int, ownerUpdate domain.OwnerUpdate) (domain.Owner, bool) {
 	if i := indexOfOwner(d.owners, id); i != -1 {
-		d.owners[i].UpdateOwnerWithValuesFrom(ownerUpdate)
+		d.UpdateOwnerWithValuesFrom(&d.owners[i], ownerUpdate)
 		return d.owners[i], true
 	}
 	return domain.Owner{}, false
@@ -43,6 +43,22 @@ func indexOfOwner(owners []domain.Owner, id int) (int) {
 	}
 	return -1
 }
+
+func (d *mockDatabase) UpdateOwnerWithValuesFrom(o *domain.Owner, ownerUpdate domain.OwnerUpdate) {
+	if ownerUpdate.FirstName != nil {
+		o.FirstName = *ownerUpdate.FirstName
+	}
+	if ownerUpdate.LastName != nil {
+		o.LastName = *ownerUpdate.LastName
+	}
+	if ownerUpdate.SocialSecurityNumber != nil {
+		o.SocialSecurityNumber = *ownerUpdate.SocialSecurityNumber
+	}
+	if ownerUpdate.Apartments != nil {
+		o.Apartments = findApartmentsById(d.apartments, *ownerUpdate.Apartments)
+	}
+}
+
 
 func (d *mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
 	ownerToRemove := domain.Owner{}

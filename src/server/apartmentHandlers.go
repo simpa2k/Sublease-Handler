@@ -18,7 +18,9 @@ func getApartmentsHandler(database database.Database) func(w http.ResponseWriter
 func getApartmentHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
-		json.NewEncoder(w).Encode(database.GetApartment(id))
+		if apartment, found := database.GetApartment(id); found {
+			json.NewEncoder(w).Encode(apartment)
+		}
 	}
 }
 

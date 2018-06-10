@@ -1,6 +1,9 @@
 package mockDatabase
 
-import "subLease/src/server/domain"
+import (
+	"subLease/src/server/domain"
+	"subLease/src/server/database"
+)
 
 func (d mockDatabase) GetOwners() []domain.Owner {
 	return d.owners
@@ -14,7 +17,7 @@ func (d mockDatabase) GetOwner(id int) (domain.Owner, bool) {
 }
 
 func findOwnerById(owners []domain.Owner, id int) (*domain.Owner, bool) {
-	for _, owner := range owners{
+	for _, owner := range owners {
 		if owner.Id == id {
 			return &owner, true
 		}
@@ -22,14 +25,14 @@ func findOwnerById(owners []domain.Owner, id int) (*domain.Owner, bool) {
 	return nil, false
 }
 
-func (d* mockDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
+func (d *mockDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
 	d.owners = append(d.owners, owner)
 	return d.owners
 }
 
-func (d *mockDatabase) UpdateOwner(id int, ownerUpdate domain.OwnerUpdate) (domain.Owner, bool) {
+func (d *mockDatabase) UpdateOwner(id int, ownerUpdate database.OwnerUpdate) (domain.Owner, bool) {
 	if i := indexOfOwner(d.owners, id); i != -1 {
-		d.UpdateOwnerWithValuesFrom(&d.owners[i], ownerUpdate)
+		ownerUpdate.UpdateOwnerWithValuesFrom(&d.owners[i], d)
 		return d.owners[i], true
 	}
 	return domain.Owner{}, false
@@ -44,23 +47,7 @@ func indexOfOwner(owners []domain.Owner, id int) (int) {
 	return -1
 }
 
-func (d *mockDatabase) UpdateOwnerWithValuesFrom(o *domain.Owner, ownerUpdate domain.OwnerUpdate) {
-	if ownerUpdate.FirstName != nil {
-		o.FirstName = *ownerUpdate.FirstName
-	}
-	if ownerUpdate.LastName != nil {
-		o.LastName = *ownerUpdate.LastName
-	}
-	if ownerUpdate.SocialSecurityNumber != nil {
-		o.SocialSecurityNumber = *ownerUpdate.SocialSecurityNumber
-	}
-	if ownerUpdate.Apartments != nil {
-		o.Apartments = findApartmentsById(d.apartments, *ownerUpdate.Apartments)
-	}
-}
-
-
-func (d *mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
+func (d* mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
 	ownerToRemove := domain.Owner{}
 	found := false
 	j := 0

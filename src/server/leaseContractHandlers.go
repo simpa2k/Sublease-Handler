@@ -34,7 +34,7 @@ func createLeaseContractHandler(database database.Database) func(w http.Response
 	}
 }
 
-func updateLeaseContractHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
+func updateLeaseContractHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryValues := r.URL.Query()
 		id, _ := strconv.Atoi(queryValues.Get("id"))
@@ -54,7 +54,7 @@ func updateLeaseContractHandler(database database.Database) func(w http.Response
 		tenantId, err := strconv.Atoi(queryValues.Get("tenant"))
 		apartmentId, err := strconv.Atoi(queryValues.Get("apartment"))
 
-		leaseContractUpdate := domain.LeaseContractUpdate {
+		leaseContractUpdate := database.LeaseContractUpdate {
 			From: &from,
 			To: &to,
 			Owner: &ownerId,
@@ -62,7 +62,7 @@ func updateLeaseContractHandler(database database.Database) func(w http.Response
 			Apartment: &apartmentId,
 		}
 
-		updatedLeaseContract, foundLeaseContractWithId := database.UpdateLeaseContract(id, leaseContractUpdate)
+		updatedLeaseContract, foundLeaseContractWithId := db.UpdateLeaseContract(id, leaseContractUpdate)
 		if foundLeaseContractWithId {
 			json.NewEncoder(w).Encode(updatedLeaseContract)
 		}

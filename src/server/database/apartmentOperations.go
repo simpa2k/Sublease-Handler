@@ -6,8 +6,8 @@ func (d actualDatabase) GetApartments() []domain.Apartment {
 	return make([]domain.Apartment, 0, 0)
 }
 
-func (d actualDatabase) GetApartment(id int) domain.Apartment {
-	return domain.Apartment{}
+func (d actualDatabase) GetApartment(id int) (domain.Apartment, bool) {
+	return domain.Apartment{}, false
 }
 
 func (d actualDatabase) CreateApartment(apartment domain.Apartment) []domain.Apartment {

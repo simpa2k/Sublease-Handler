@@ -18,7 +18,9 @@ func getTenantsHandler(database database.Database) func(w http.ResponseWriter, r
 func getTenantHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
-		json.NewEncoder(w).Encode(database.GetTenant(id))
+		if tenant, found := database.GetTenant(id); found {
+			json.NewEncoder(w).Encode(tenant)
+		}
 	}
 }
 

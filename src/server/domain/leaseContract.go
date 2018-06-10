@@ -11,14 +11,6 @@ type LeaseContract struct {
 	Apartment Apartment
 }
 
-type LeaseContractUpdate struct {
-	From      *time.Time
-	To        *time.Time
-	Owner     *int
-	Tenant    *int
-	Apartment *int
-}
-
 func CreateLeaseContract(from time.Time, to time.Time, owner Owner, tenant Tenant, apartment Apartment) LeaseContract {
 	return LeaseContract {
 		From: from,

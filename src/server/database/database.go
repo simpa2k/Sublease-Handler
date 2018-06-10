@@ -6,7 +6,7 @@ import (
 
 type Database interface {
 	GetApartments() []domain.Apartment
-	GetApartment(id int) domain.Apartment
+	GetApartment(id int) (domain.Apartment, bool)
 	CreateApartment(apartment domain.Apartment) []domain.Apartment
 	UpdateApartment(id int, newApartment domain.Apartment) domain.Apartment
 	DeleteApartment(id int) domain.Apartment
@@ -18,7 +18,7 @@ type Database interface {
 	DeleteOwner(id int) (domain.Owner, bool)
 
 	GetTenants() []domain.Tenant
-	GetTenant(id int) domain.Tenant
+	GetTenant(id int) (domain.Tenant, bool)
 	CreateTenant(tenant domain.Tenant) []domain.Tenant
 	UpdateTenant(id int, newTenant domain.Tenant) domain.Tenant
 	DeleteTenant(id int) domain.Tenant
@@ -26,7 +26,7 @@ type Database interface {
 	GetLeaseContracts() []domain.LeaseContract
 	GetLeaseContract(id int) (domain.LeaseContract, bool)
 	CreateLeaseContract(leaseContract domain.LeaseContract) []domain.LeaseContract
-	UpdateLeaseContract(id int, leaseContractUpdate domain.LeaseContractUpdate) (domain.LeaseContract, bool)
+	UpdateLeaseContract(id int, leaseContractUpdate LeaseContractUpdate) (domain.LeaseContract, bool)
 	DeleteLeaseContract(id int) (domain.LeaseContract, bool)
 }
 

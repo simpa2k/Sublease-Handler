@@ -24,7 +24,7 @@ func Create(birthDate time.Time, birthNumber string, control int) SocialSecurity
 	}
 }
 
-func (ssn *SocialSecurityNumber) Equal(other *SocialSecurityNumber) bool {
+func (ssn *SocialSecurityNumber) Equal(other SocialSecurityNumber) bool {
 	return ssn.Century == other.Century &&
 		ssn.Year == other.Year &&
 		ssn.Month == other.Month &&

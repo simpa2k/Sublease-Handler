@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"subLease/src/server/socialSecurityNumber"
 	"subLease/test/utils/mockDatabase"
+	"subLease/src/server/address"
 )
 
 func TestGetOwners(t *testing.T) {
@@ -30,7 +31,11 @@ func TestPostOwner(t *testing.T) {
 		FirstName: "Sumon",
 		LastName: "Olafsen",
 		SocialSecurityNumber: socialSecurityNumber.Create(time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local), "017", 1),
-		Apartments: []domain.Apartment {domain.CreateApartment(1101, "Norra Stationsgatan", 119,  "113 64", "Stockholm")},
+		Apartments: []domain.Apartment {
+			domain.CreateApartment(
+				1101,
+				address.Create("Norra Stationsgatan", 119,  "113 64", "Stockholm")),
+	},
 	}
 
 	jsonBytes, _ := json.Marshal(newOwner)

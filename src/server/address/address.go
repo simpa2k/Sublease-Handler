@@ -16,6 +16,6 @@ func Create(street string, number int, zipCode string, city string) Address {
 	}
 }
 
-func (a *Address) Equal(other *Address) bool {
+func (a *Address) Equal(other Address) bool {
 	return a.Street == other.Street && a.Number == other.Number && a.ZipCode == other.ZipCode && a.City == other.City
 }

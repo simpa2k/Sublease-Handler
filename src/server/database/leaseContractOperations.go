@@ -11,6 +11,10 @@ func (d actualDatabase) GetLeaseContract(id int) (domain.LeaseContract, bool) {
 	return domain.LeaseContract{}, false
 }
 
+func (d actualDatabase) GetLeaseContractsById(ids []int) []domain.LeaseContract {
+	return make([]domain.LeaseContract, 0, 0)
+}
+
 func (d* actualDatabase) CreateLeaseContract(leaseContract domain.LeaseContract) []domain.LeaseContract {
 	return make([]domain.LeaseContract, 0, 0)
 }

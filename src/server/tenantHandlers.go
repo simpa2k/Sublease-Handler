@@ -33,13 +33,16 @@ func createTenantHandler(database database.Database) func(w http.ResponseWriter,
 	}
 }
 
-func updateTenantHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
+func updateTenantHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		var tenant domain.Tenant
 		_ = json.NewDecoder(r.Body).Decode(&tenant)
 
-		json.NewEncoder(w).Encode(database.UpdateTenant(id, tenant))
+		updatedTenant, foundTenantWithId := db.UpdateTenant(id, database.TenantUpdate{})
+		if foundTenantWithId {
+			json.NewEncoder(w).Encode(updatedTenant)
+		}
 	}
 }
 

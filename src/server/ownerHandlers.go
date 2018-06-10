@@ -35,7 +35,7 @@ func createOwnerHandler(database database.Database) func(w http.ResponseWriter, 
 	}
 }
 
-func updateOwnerHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
+func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryValues := r.URL.Query()
 		id, _ := strconv.Atoi(queryValues.Get("id"))
@@ -48,14 +48,14 @@ func updateOwnerHandler(database database.Database) func(w http.ResponseWriter, 
 		var apartments []int
 		_ = json.NewDecoder(strings.NewReader(queryValues.Get("apartments"))).Decode(&apartments)
 
-		ownerUpdate := domain.OwnerUpdate{
+		ownerUpdate := database.OwnerUpdate{
 			FirstName: &firstName,
 			LastName: &lastName,
 			SocialSecurityNumber: &ssn,
 			Apartments: &apartments,
 		}
 
-		updatedOwner, foundOwnerWithId := database.UpdateOwner(id, ownerUpdate)
+		updatedOwner, foundOwnerWithId := db.UpdateOwner(id, ownerUpdate)
 		if foundOwnerWithId {
 			json.NewEncoder(w).Encode(updatedOwner)
 		}

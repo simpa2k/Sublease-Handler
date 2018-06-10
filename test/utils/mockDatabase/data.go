@@ -4,15 +4,18 @@ import (
 	"subLease/src/server/domain"
 	"subLease/src/server/socialSecurityNumber"
 	"time"
+	"subLease/src/server/address"
 )
 
 func GetSampleApartment1() domain.Apartment {
 	apartment := domain.CreateApartment(
 		1104,
-		"Norra Stationsgatan",
-		117,
-		"113 64",
-		"Stockholm",
+		address.Create(
+			"Norra Stationsgatan",
+			117,
+			"113 64",
+			"Stockholm",
+			),
 	)
 	apartment.Id = 1
 
@@ -22,10 +25,12 @@ func GetSampleApartment1() domain.Apartment {
 func GetSampleApartment2() domain.Apartment {
 	apartment := domain.CreateApartment(
 		1103,
-		"Norra Stationsgatan",
-		119,
-		"113 64",
-		"Stockholm",
+		address.Create(
+			"Norra Stationsgatan",
+			119,
+			"113 64",
+			"Stockholm",
+		),
 	)
 	apartment.Id = 2
 

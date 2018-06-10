@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"text/template"
 	"fmt"
+	"regexp"
 )
 
 type Operation struct {
@@ -15,11 +16,54 @@ type Operation struct {
 type EntityDefinition struct {
 	Entity string
 	Abbreviation string
-	Fields map[string]string
+	//Fields map[string]string
+	Fields []Field
+}
+
+type modifier int
+const (
+	unmodified modifier = iota
+	slice	   modifier = iota
+)
+
+type Field struct {
+	Identifier      string
+	TypeDeclaration string
+	IsDomainEntity  bool
+	IsComplexType   bool
+	TypeModifier    modifier
 }
 
 func main() {
-	domainEntities := map[string]map[string]string {
+	domainEntities := []EntityDefinition {
+		{"apartment", "a", []Field {
+			{"Id", "int", false, false, unmodified},
+			{"Number","int", false, false, unmodified},
+			{"Address", "address.Address",false, true, unmodified},
+		}},
+		{"lease_contract", "lc", []Field {
+			{"Id", "int", false, false, unmodified},
+			{"From", "time.Time", false, true, unmodified},
+			{"To", "time.Time", false, true, unmodified},
+			{"Owner", "Owner", true, true, unmodified},
+			{"Tenant", "Tenant", true, true, unmodified},
+			{"Apartment", "Apartment", true, true, unmodified},
+		}},
+		{"owner", "o", []Field {
+			{"Id", "int", false, false, unmodified},
+			{"FirstName", "string", false, false, unmodified},
+			{"LastName", "string", false, false, unmodified},
+			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
+			{"Apartments", "[]Apartment", true, true, slice},
+		}},
+		{"tenant", "t", []Field {
+			{"Id","int", false, false, unmodified},
+			{"FirstName","string", false, false, unmodified},
+			{"LastName", "string", false, false, unmodified},
+			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
+		}},
+	}
+	/*domainEntities := map[string]map[string]string {
 		"apartment": {
 			"Id": "int",
 			"Number": "int",
@@ -46,79 +90,116 @@ func main() {
 			"LastName": "string",
 			"SocialSecurityNumber": "socialSecurityNumber.SocialSecurityNumber",
 		},
-	}
+	}*/
 
-	funcMap := template.FuncMap {
-		"Capitalize": func(s string) string { return applyToFirstCharacter(s, strings.ToUpper) },
-		"Decapitalize": func(s string) string { return applyToFirstCharacter(s, strings.ToLower) },
-		"CommaSeparate": commaSeparate,
-		"BuildEquals": buildEquals,
-		"IsDomainEntity": isDomainEntity,
+	funcMap := template.FuncMap{
+		"Capitalize":                      func(s string) string { return applyToFirstCharacter(s, strings.ToUpper) },
+		"Decapitalize":                    func(s string) string { return applyToFirstCharacter(s, strings.ToLower) },
+		"DecapitalizeSlice":               decapitalizeSlice,
+		"PascalCase":                      ToPascalCase,
+		"CamelCase":                       ToCamelCase,
+		"CommaSeparate":                   commaSeparate,
+		"BuildEquals":                     buildEquals,
+		"RemoveQualificationIfDomainType": removeQualificationIfDomainType,
+		"IsSliceType":                     isSliceType,
+		"RequiresQuery":				   requiresQuery,
+		"FilterFieldsFromConstructor":	   filterFieldsFromConstructor,
 	}
 
 	generateMockOperations(domainEntities, funcMap, os.Args[1], os.Args[2])
-	generateEntities(domainEntities, funcMap, os.Args[1], os.Args[3])
+	generateEntities(domainEntities, funcMap, os.Args[1], os.Args[3], os.Args[4])
 }
 
-func generateMockOperations(domainEntities map[string]map[string]string, funcMap template.FuncMap, templateRoot string, outputPath string) {
-	for entity := range domainEntities {
-		op := Operation{toPascalCase(entity)}
+func setComplexTypes(domainEntities map[string]map[string]string) map[string]struct{} {
+	complexTypes := make(map[string]struct{})
+	for key := range domainEntities {
+		complexTypes[key] = struct{}{}
+	}
+
+	additionalComplexTypes := []string{"address", "social_security_number"}
+	for _, additionalComplexType := range additionalComplexTypes {
+		complexTypes[additionalComplexType] = struct{}{}
+	}
+
+	return complexTypes
+}
+
+func generateMockOperations(domainEntities []EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	for _, entity := range domainEntities {
+		//op := Operation{ToPascalCase(entity.Entity)}
+		op := Operation{entity.Entity}
 		templateText, err := ioutil.ReadFile(templateRoot + "operations.tmpl")
 		check(err)
 
 		t, err := template.New("operation").Funcs(funcMap).Parse(string(templateText))
 		check(err)
 
-		f, err := os.Create(fmt.Sprintf("%s%sOperations.go", outputPath, toCamelCase(entity)))
+		f, err := os.Create(fmt.Sprintf("%s%sOperations.go", outputPath, ToCamelCase(entity.Entity)))
 		check(err)
 		err = t.Execute(f, op)
 		check(err)
 	}
 }
 
-func generateEntities(domainEntities map[string]map[string]string, funcMap template.FuncMap, templateRoot string, outputPath string) {
+func generateEntities(domainEntities []EntityDefinition, funcMap template.FuncMap, templateRoot string, entityOutputPath string, entityUpdateOutputPath string) {
 
-	for entityName, fields := range domainEntities {
-		entityDefinition := EntityDefinition {
-			toPascalCase(entityName),
-			abbreviate(entityName),
-			fields,
-		}
+	for _, entityDefinition := range domainEntities {
 
 		t, err := template.New("domain_entity.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "domain_entity.tmpl")
 		check(err)
 		err = t.Execute(os.Stdout, entityDefinition)
 		check(err)
 
-		f, err := os.Create(fmt.Sprintf("%s%s.go", outputPath, toCamelCase(entityName)))
+		f, err := os.Create(fmt.Sprintf("%s%s.go", entityOutputPath, ToCamelCase(entityDefinition.Entity)))
 		check(err)
 		err = t.Execute(f, entityDefinition)
 		check(err)
 
+		for i, field := range entityDefinition.Fields {
+			if field.IsDomainEntity {
+				if field.TypeModifier == slice {
+					field.TypeDeclaration = "[]int" // Updates only use ids for referencing domain entities
+				} else {
+					field.TypeDeclaration = "int"
+				}
+			}
+			entityDefinition.Fields[i] = field
+		}
+
 		t, err = template.New("entity_update.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "entity_update.tmpl")
 		check(err)
 
-		f, err = os.Create(fmt.Sprintf("%s%sUpdate.go", outputPath, toCamelCase(entityName)))
+		f, err = os.Create(fmt.Sprintf("%s%sUpdate.go", entityUpdateOutputPath, ToCamelCase(entityDefinition.Entity)))
 		check(err)
 		err = t.Execute(f, entityDefinition)
 		check(err)
 	}
 }
 
-func toPascalCase(snakeCased string) string {
+func ToPascalCase(snakeCased string) string {
 	spaced := strings.Replace(snakeCased, "_", " ", -1)
 	upperCased := strings.Title(spaced)
 	return strings.Replace(upperCased, " ", "", -1)
 }
 
-func toCamelCase(snakeCased string) string {
+func ToCamelCase(snakeCased string) string {
 	words := strings.Split(snakeCased, "_")
-	camelCased := string(words[0])
+	camelCased := strings.ToLower(string(words[0]))
 	for _, word := range words[1:] {
 		camelCased += strings.Title(word)
 	}
 
 	return camelCased
+}
+
+// From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
+func toSnakeCase(s string) string {
+	var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+	var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+	snake := matchFirstCap.ReplaceAllString(s, "${1}_${2}")
+	snake  = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }
 
 func abbreviate(snakeCased string) string {
@@ -131,44 +212,93 @@ func abbreviate(snakeCased string) string {
 	return abbreviated
 }
 
-func commaSeparate(values map[string]string) string {
+func commaSeparate(values []Field) string {
 	var separated string
 	first := true
-	for key, value := range values {
+	for _, field := range values {
 		if first {
 			first = false
 		} else {
 			separated += ", "
 		}
-		separated += fmt.Sprintf("%s %s", key, value)
+		separated += fmt.Sprintf("%s %s", field.Identifier, field.TypeDeclaration)
 	}
 	return separated
 }
 
-func buildEquals(abbreviation string, values map[string]string) string {
+func buildEquals(entityDefinition EntityDefinition) string {
 	var separated string
 	first := true
-	for key := range values {
-		if first {
-			first = false
-		} else {
-			separated += " && "
+	for _, field := range entityDefinition.Fields {
+		if field.TypeModifier != slice { // TODO: Handle this
+			if first {
+				first = false
+			} else {
+				separated += " && "
+			}
+
+			var stringToFormat string
+			if field.IsDomainEntity {
+				stringToFormat = "%s.%s.Equal(&other.%s)"
+			} else if field.IsComplexType {
+				stringToFormat = "%s.%s.Equal(other.%s)"
+			} else {
+				stringToFormat = "%s.%s == other.%s"
+			}
+
+			separated += fmt.Sprintf(stringToFormat, entityDefinition.Abbreviation, field.Identifier, field.Identifier)
 		}
-		separated += fmt.Sprintf("%s.%s == other.%s", abbreviation, key, key)
 	}
 	return separated
 }
 
-func isDomainEntity (typeDeclaration string) bool {
-	domainEntities := map[string]struct{} {
-		"Apartment": {},
-		"LeaseContract": {},
-		"Owner": {},
-		"Tenant": {},
+func isComplexType(complexTypes map[string]struct{}, typeDeclaration string) bool {
+	_, found := complexTypes[toSnakeCase(typeDeclaration)]
+	return found
+}
+
+func isDomainEntity(domainEntities map[string]map[string]string, typeDeclaration string) bool {
+	typeDeclaration = replaceNonAlphabetical(typeDeclaration)
+	_, found := domainEntities[toSnakeCase(typeDeclaration)]
+	return found
+}
+
+func replaceNonAlphabetical(s string) string {
+	nonAlphabetical := regexp.MustCompile("[^A-Za-z]")
+	return nonAlphabetical.ReplaceAllString(s, "")
+}
+
+func removeQualificationIfDomainType(s string) string {
+	domainType := regexp.MustCompile("domain.")
+	return domainType.ReplaceAllString(s, "")
+}
+
+func isSliceType(field Field) bool {
+	return field.TypeModifier == slice
+}
+
+func requiresQuery(field Field) bool {
+	return field.IsDomainEntity && field.TypeModifier != slice
+}
+
+func filterFieldsFromConstructor(fields []Field) []Field {
+	var filtered []Field
+	for _, field := range fields {
+		if field.Identifier != "Id" {
+			filtered = append(filtered, field)
+		}
+	}
+	return filtered
+}
+
+func decapitalizeSlice(s []Field) []Field {
+	var decapitalized []Field
+	for _, field := range s {
+		field.Identifier = applyToFirstCharacter(field.Identifier, strings.ToLower)
+		decapitalized = append(decapitalized, field)
 	}
 
-	_, found := domainEntities[typeDeclaration]
-	return found
+	return decapitalized
 }
 
 func applyToFirstCharacter(s string, operation func(string) string) string {

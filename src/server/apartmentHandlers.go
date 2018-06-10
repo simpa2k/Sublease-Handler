@@ -33,13 +33,16 @@ func createApartmentHandler(database database.Database) func(w http.ResponseWrit
 	}
 }
 
-func updateApartmentHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
+func updateApartmentHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		var apartment domain.Apartment
 		_ = json.NewDecoder(r.Body).Decode(&apartment)
 
-		json.NewEncoder(w).Encode(database.UpdateApartment(id, apartment))
+		updatedApartment, foundApartmentWithId := db.UpdateApartment(id, database.ApartmentUpdate{})
+		if foundApartmentWithId {
+			json.NewEncoder(w).Encode(updatedApartment)
+		}
 	}
 }
 

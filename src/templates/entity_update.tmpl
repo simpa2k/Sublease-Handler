@@ -5,21 +5,27 @@ import (
 	"subLease/src/server/domain"
 )
 
-type {{ .Entity }}Update struct {
-{{- range $key, $value := .Fields }}
-    {{ $key }} *{{ $value -}}
+{{ $pascalCased := .Entity | PascalCase }}
+
+type {{ $pascalCased }}Update struct {
+{{- range .Fields }}
+    {{ .Identifier }} *{{ .TypeDeclaration -}}
 {{ end }}
 }
 
-func ({{ .Abbreviation }} *{{ .Entity }}Update) Update{{ .Entity }}WithValuesFrom(e *domain.{{ .Entity }}, database Database) {
-{{- range $key, $value := .Fields }}
-    if {{ $.Abbreviation }}.{{ $key }} != nil {
-    {{- if $key | IsDomainEntity }}
-		if {{ $key | Decapitalize }}, found := database.Get{{ $key | Capitalize }}(*{{ $.Abbreviation }}.{{ $key | Capitalize }}); found {
-			e.{{ $key | Capitalize }} = {{ $key | Decapitalize }}
+func ({{ .Abbreviation }} *{{ $pascalCased }}Update) Update{{ $pascalCased }}WithValuesFrom(e *domain.{{ $pascalCased }}, database Database) {
+{{- range .Fields }}
+    if {{ $.Abbreviation }}.{{ .Identifier }} != nil {
+    {{- if .IsDomainEntity }}
+        {{ if . | IsSliceType }}
+            e.{{ .Identifier | Capitalize }} = database.Get{{ .Identifier | PascalCase }}ById(*{{ $.Abbreviation }}.{{ .Identifier }})
+        {{ else }}
+		if {{ .Identifier | Decapitalize }}, found := database.Get{{ .Identifier | Capitalize }}(*{{ $.Abbreviation }}.{{ .Identifier | Capitalize }}); found {
+            e.{{ .Identifier | Capitalize }} = {{ .Identifier | Decapitalize }}
 		}
+        {{ end }}
     {{- else }}
-		e.{{ $key }} = *{{ $.Abbreviation }}.{{ $key }}
+		e.{{ .Identifier }} = *{{ $.Abbreviation }}.{{ .Identifier }}
     {{- end }}
     }
 {{- end }}

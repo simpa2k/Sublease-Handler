@@ -1,5 +1,4 @@
-//o:generate go run ../../src/templates/main/generate.go ../../../src/templates/ ../utils/mockDatabase/ ../../../src/server/domain/ ../../../src/server/database/
-//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../../experiment/ ../../experiment/ ../../experiment/
+//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../utils/mockDatabase/ ../../src/server/domain/ ../../src/server/database/
 
 package server
 

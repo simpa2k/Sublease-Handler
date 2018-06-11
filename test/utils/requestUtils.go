@@ -1,18 +1,18 @@
 package utils
 
 import (
-	"subLease/test/utils/mockDatabase"
-	"subLease/src/server"
-	"net/http"
-	"subLease/src/server/database"
-	"strings"
 	"io"
+	"net/http"
 	"net/http/httptest"
-	"testing"
 	"net/url"
+	"strings"
+	"subLease/src/server"
+	"subLease/src/server/database"
+	"subLease/test/utils/mockDatabase"
+	"testing"
 )
 
-func AssertRequestResponseMatchesOracle(t *testing.T, requestMethod string, endpoint string, body io.Reader, oracleGetter func(db database.Database) ([]byte, error)) (database.Database) {
+func AssertRequestResponseMatchesOracle(t *testing.T, requestMethod string, endpoint string, body io.Reader, oracleGetter func(db database.Database) ([]byte, error)) database.Database {
 	res, db := requestToServerWithMockDatabase(requestMethod, endpoint, body)
 	jsonBytes, err := oracleGetter(db)
 	assertNoErrorAndCorrectResponse(err, jsonBytes, res, t)
@@ -39,7 +39,7 @@ func requestToServerWithMockDatabase(method string, endpoint string, body io.Rea
 	return RequestToServer(r, method, endpoint, body), db
 }
 
-func RequestToServer(r http.Handler, method string, endpoint string, body io.Reader) (*httptest.ResponseRecorder) {
+func RequestToServer(r http.Handler, method string, endpoint string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, endpoint, body)
 	if err != nil {
 		panic(err)
@@ -66,7 +66,10 @@ func EqualJSON(json1 string, json2 string) (string, string, bool) {
 	return replacedAndTrimmed1, replacedAndTrimmed2, replacedAndTrimmed1 == replacedAndTrimmed2
 }
 
-func BuildQuery(baseUrl string, queries []struct {Key string; Value string}) string {
+func BuildQuery(baseUrl string, queries []struct {
+	Key   string
+	Value string
+}) string {
 	u, _ := url.Parse(baseUrl)
 	q := u.Query()
 
@@ -79,4 +82,3 @@ func BuildQuery(baseUrl string, queries []struct {Key string; Value string}) str
 
 	return completeUrl
 }
-

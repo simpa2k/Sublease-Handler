@@ -1,12 +1,12 @@
 package server
 
 import (
-	"subLease/src/server/database"
-	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"subLease/src/server/domain"
+	"net/http"
 	"strconv"
+	"subLease/src/server/database"
+	"subLease/src/server/domain"
 )
 
 func getApartmentsHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {

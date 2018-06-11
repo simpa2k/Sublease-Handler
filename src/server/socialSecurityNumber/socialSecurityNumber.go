@@ -5,22 +5,22 @@ import (
 )
 
 type SocialSecurityNumber struct {
-	Century int
-	Year int
-	Month time.Month
-	Day int
+	Century     int
+	Year        int
+	Month       time.Month
+	Day         int
 	BirthNumber string
-	Control int
+	Control     int
 }
 
 func Create(birthDate time.Time, birthNumber string, control int) SocialSecurityNumber {
-	return SocialSecurityNumber {
-		Century: birthDate.Year() / 100,
-		Year: birthDate.Year() % 100,
-		Month: birthDate.Month(),
-		Day: birthDate.Day(),
+	return SocialSecurityNumber{
+		Century:     birthDate.Year() / 100,
+		Year:        birthDate.Year() % 100,
+		Month:       birthDate.Month(),
+		Day:         birthDate.Day(),
 		BirthNumber: birthNumber,
-		Control: control,
+		Control:     control,
 	}
 }
 

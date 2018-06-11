@@ -3,15 +3,15 @@
 package server
 
 import (
-	"testing"
+	"bytes"
 	"encoding/json"
-	"subLease/test/utils"
+	"strconv"
 	"subLease/src/server/database"
 	"subLease/src/server/domain"
-	"time"
+	"subLease/test/utils"
 	"subLease/test/utils/mockDatabase"
-	"bytes"
-	"strconv"
+	"testing"
+	"time"
 )
 
 func TestGetLeaseContracts(t *testing.T) {
@@ -28,11 +28,11 @@ func TestGetLeaseContract(t *testing.T) {
 }
 
 func TestPostLeaseContract(t *testing.T) {
-	newLeaseContract := domain.LeaseContract {
-		From: time.Date(2018, time.July, 15, 0, 0, 0, 0, time.Local),
-		To: time.Date(2019, time.July, 15, 0, 0, 0, 0, time.Local),
-		Owner: mockDatabase.GetSampleOwner1(mockDatabase.GetSampleApartment1()),
-		Tenant: mockDatabase.GetSampleTenant1(),
+	newLeaseContract := domain.LeaseContract{
+		From:      time.Date(2018, time.July, 15, 0, 0, 0, 0, time.Local),
+		To:        time.Date(2019, time.July, 15, 0, 0, 0, 0, time.Local),
+		Owner:     mockDatabase.GetSampleOwner1(mockDatabase.GetSampleApartment1()),
+		Tenant:    mockDatabase.GetSampleTenant1(),
 		Apartment: mockDatabase.GetSampleApartment1(),
 	}
 
@@ -71,7 +71,10 @@ func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
 	r, db := utils.SetupServerWithMockDatabase()
 	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
 
-	completeUrl := utils.BuildQuery("/lease_contract", []struct {Key string; Value string} {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
 		{"id", "1"},
 		{"from", newFrom.String()},
 		{"to", newTo.String()},

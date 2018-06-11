@@ -1,14 +1,14 @@
 package mockDatabase
 
 import (
-	"subLease/src/server/domain"
 	"subLease/src/server/database"
+	"subLease/src/server/domain"
 )
 
 type mockDatabase struct {
-	apartments []domain.Apartment
-	owners []domain.Owner
-	tenants []domain.Tenant
+	apartments     []domain.Apartment
+	owners         []domain.Owner
+	tenants        []domain.Tenant
 	leaseContracts []domain.LeaseContract
 }
 
@@ -24,11 +24,10 @@ func Create() database.Database {
 
 	leaseContract := GetSampleLeaseContract(owner1, tenant1, apartment1)
 
-	return &mockDatabase {
-		[]domain.Apartment {apartment1, GetSampleApartment2()},
-		[]domain.Owner {owner1, owner2},
-		[]domain.Tenant {tenant1, tenant2},
-		[]domain.LeaseContract {leaseContract},
-
+	return &mockDatabase{
+		[]domain.Apartment{apartment1, GetSampleApartment2()},
+		[]domain.Owner{owner1, owner2},
+		[]domain.Tenant{tenant1, tenant2},
+		[]domain.LeaseContract{leaseContract},
 	}
 }

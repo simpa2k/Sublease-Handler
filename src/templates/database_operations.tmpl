@@ -1,0 +1,30 @@
+package database
+
+import "subLease/src/server/domain"
+
+{{ $pascalCased := .Entity | PascalCase }}
+{{ $camelCased  := .Entity | CamelCase }}
+
+func (d actualDatabase) Get{{ $pascalCased }}s() []domain.{{ $pascalCased }} {
+	return make([]domain.{{ $pascalCased }}, 0, 0)
+}
+
+func (d actualDatabase) Get{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool) {
+	return domain.{{ $pascalCased }}{}, false
+}
+
+func (d actualDatabase) Get{{ $pascalCased }}sById(ids []int) []domain.{{ $pascalCased }} {
+	return make([]domain.{{ $pascalCased }}, 0, 0)
+}
+
+func (d actualDatabase) Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) []domain.{{ $pascalCased }} {
+	return make([]domain.{{ $pascalCased }}, 0, 0)
+}
+
+func (d actualDatabase) Update{{ $pascalCased }}(id int, {{ $camelCased }}Update {{ $pascalCased }}Update) (domain.{{ $pascalCased }}, bool) {
+	return domain.{{ $pascalCased }}{}, false
+}
+
+func (d actualDatabase) Delete{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool) {
+	return domain.{{ $pascalCased }}{}, false
+}

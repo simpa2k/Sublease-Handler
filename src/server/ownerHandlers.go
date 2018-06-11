@@ -1,13 +1,13 @@
 package server
 
 import (
-	"subLease/src/server/database"
-	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"net/http"
 	"strconv"
-	"subLease/src/server/domain"
 	"strings"
+	"subLease/src/server/database"
+	"subLease/src/server/domain"
 	"subLease/src/server/socialSecurityNumber"
 )
 
@@ -49,10 +49,10 @@ func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *htt
 		_ = json.NewDecoder(strings.NewReader(queryValues.Get("apartments"))).Decode(&apartments)
 
 		ownerUpdate := database.OwnerUpdate{
-			FirstName: &firstName,
-			LastName: &lastName,
+			FirstName:            &firstName,
+			LastName:             &lastName,
 			SocialSecurityNumber: &ssn,
-			Apartments: &apartments,
+			Apartments:           &apartments,
 		}
 
 		updatedOwner, foundOwnerWithId := db.UpdateOwner(id, ownerUpdate)

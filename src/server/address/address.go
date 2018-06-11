@@ -1,18 +1,18 @@
 package address
 
 type Address struct {
-	Street string
-	Number int
+	Street  string
+	Number  int
 	ZipCode string // The datatype is debatable but the zipcode is not really an integer, despite technically being numeric. It would be overkill to represent it as a separate type.
-	City string
+	City    string
 }
 
 func Create(street string, number int, zipCode string, city string) Address {
-	return Address {
-		Street: street,
-		Number: number,
+	return Address{
+		Street:  street,
+		Number:  number,
 		ZipCode: zipCode,
-		City: city,
+		City:    city,
 	}
 }
 

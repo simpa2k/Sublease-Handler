@@ -1,11 +1,11 @@
 package server
 
 import (
-	"subLease/src/server/database"
-	"net/http"
 	"encoding/json"
-	"strconv"
 	"github.com/gorilla/mux"
+	"net/http"
+	"strconv"
+	"subLease/src/server/database"
 	"subLease/src/server/domain"
 )
 
@@ -51,4 +51,3 @@ func deleteTenantHandler(database database.Database) func(w http.ResponseWriter,
 
 	}
 }
-

@@ -1,0 +1,24 @@
+package database
+
+import (
+	"subLease/src/server/domain"
+)
+
+type Database interface {
+{{ range . }}
+    {{ $pascalCased := .Entity | PascalCase }}
+    {{ $camelCased  := .Entity | CamelCase }}
+    Get{{ $pascalCased }}s() []domain.{{ $pascalCased }}
+    Get{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool)
+    Get{{ $pascalCased }}sById(id []int) []domain.{{ $pascalCased }}
+    Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) []domain.{{ $pascalCased }}
+    Update{{ $pascalCased }}(id int, {{ $camelCased }}Update {{ $pascalCased }}Update) (domain.{{ $pascalCased }}, bool)
+    Delete{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool)
+{{ end }}
+}
+
+type actualDatabase struct {}
+
+func Create() Database {
+	return &actualDatabase{}
+}

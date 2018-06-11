@@ -1,16 +1,16 @@
 package server
 
 import (
-	"testing"
-	"subLease/test/utils"
-	"subLease/src/server/database"
-	"encoding/json"
-	"subLease/src/server/domain"
-	"time"
 	"bytes"
-	"subLease/src/server/socialSecurityNumber"
-	"subLease/test/utils/mockDatabase"
+	"encoding/json"
 	"subLease/src/server/address"
+	"subLease/src/server/database"
+	"subLease/src/server/domain"
+	"subLease/src/server/socialSecurityNumber"
+	"subLease/test/utils"
+	"subLease/test/utils/mockDatabase"
+	"testing"
+	"time"
 )
 
 func TestGetOwners(t *testing.T) {
@@ -28,14 +28,14 @@ func TestGetOwner(t *testing.T) {
 
 func TestPostOwner(t *testing.T) {
 	newOwner := domain.Owner{
-		FirstName: "Sumon",
-		LastName: "Olafsen",
+		FirstName:            "Sumon",
+		LastName:             "Olafsen",
 		SocialSecurityNumber: socialSecurityNumber.Create(time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local), "017", 1),
-		Apartments: []domain.Apartment {
+		Apartments: []domain.Apartment{
 			domain.CreateApartment(
 				1101,
-				address.Create("Norra Stationsgatan", 119,  "113 64", "Stockholm")),
-	},
+				address.Create("Norra Stationsgatan", 119, "113 64", "Stockholm")),
+		},
 	}
 
 	jsonBytes, _ := json.Marshal(newOwner)
@@ -62,8 +62,8 @@ func TestUpdateOwnerUpdatesAllValues(t *testing.T) {
 	newSocialSecurityNumberJSONBytes, _ := json.Marshal(newSocialSecurityNumber)
 
 	newApartment := mockDatabase.GetSampleApartment2()
-	newApartments := []domain.Apartment {newApartment}
-	newApartmentIds := []int {newApartment.Id}
+	newApartments := []domain.Apartment{newApartment}
+	newApartmentIds := []int{newApartment.Id}
 	newApartmentIdsJSONBytes, _ := json.Marshal(newApartmentIds)
 
 	newOwner := domain.CreateOwner(
@@ -77,7 +77,10 @@ func TestUpdateOwnerUpdatesAllValues(t *testing.T) {
 	r, db := utils.SetupServerWithMockDatabase()
 	ownerBeforeRequest, _ := db.GetOwner(1)
 
-	completeUrl := utils.BuildQuery("/owner", []struct {Key string; Value string} {
+	completeUrl := utils.BuildQuery("/owner", []struct {
+		Key   string
+		Value string
+	}{
 		{"id", "1"},
 		{"firstname", newFirstName},
 		{"lastname", newLastName},

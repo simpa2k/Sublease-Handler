@@ -1,10 +1,10 @@
 package mockDatabase
 
 import (
+	"subLease/src/server/address"
 	"subLease/src/server/domain"
 	"subLease/src/server/socialSecurityNumber"
 	"time"
-	"subLease/src/server/address"
 )
 
 func GetSampleApartment1() domain.Apartment {
@@ -15,7 +15,7 @@ func GetSampleApartment1() domain.Apartment {
 			117,
 			"113 64",
 			"Stockholm",
-			),
+		),
 	)
 	apartment.Id = 1
 
@@ -45,7 +45,7 @@ func GetSampleOwner1(apartment domain.Apartment) domain.Owner {
 			time.Date(1989, time.June, 1, 0, 0, 0, 0, time.Local),
 			"071",
 			1),
-		[]domain.Apartment {apartment},
+		[]domain.Apartment{apartment},
 	)
 	owner.Id = 1
 
@@ -60,7 +60,7 @@ func GetSampleOwner2(apartment domain.Apartment) domain.Owner {
 			time.Date(19890, time.July, 2, 0, 0, 0, 0, time.Local),
 			"071",
 			1),
-		[]domain.Apartment {apartment},
+		[]domain.Apartment{apartment},
 	)
 	owner.Id = 2
 
@@ -70,7 +70,7 @@ func GetSampleOwner2(apartment domain.Apartment) domain.Owner {
 func GetSampleTenant1() domain.Tenant {
 	tenant := domain.Tenant{
 		FirstName: "Simpa",
-		LastName: "Lainen",
+		LastName:  "Lainen",
 		SocialSecurityNumber: socialSecurityNumber.Create(
 			time.Date(1989, time.June, 1, 0, 0, 0, 0, time.Local),
 			"071",
@@ -97,7 +97,7 @@ func GetSampleTenant2() domain.Tenant {
 	return tenant
 }
 
-func GetSampleLeaseContract(owner domain.Owner, tenant domain.Tenant, apartment domain.Apartment) domain.LeaseContract  {
+func GetSampleLeaseContract(owner domain.Owner, tenant domain.Tenant, apartment domain.Apartment) domain.LeaseContract {
 	leaseContract := domain.CreateLeaseContract(
 		time.Date(2018, time.June, 1, 0, 0, 0, 0, time.Local),
 		time.Date(2019, time.June, 1, 0, 0, 0, 0, time.Local),

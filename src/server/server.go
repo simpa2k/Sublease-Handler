@@ -2,8 +2,8 @@ package server
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 	"log"
+	"net/http"
 	"subLease/src/server/database"
 )
 
@@ -12,7 +12,7 @@ type Server struct {
 }
 
 func Create(database database.Database) Server {
-	return Server {
+	return Server{
 		database: database,
 	}
 }
@@ -66,4 +66,3 @@ func (s Server) setupApartmentRoutes(r *mux.Router) {
 	r.HandleFunc("/apartment/{id}", updateApartmentHandler(s.database)).Methods("PUT")
 	r.HandleFunc("/apartment/{id}", deleteApartmentHandler(s.database)).Methods("DELETE")
 }
-

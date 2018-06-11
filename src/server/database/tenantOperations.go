@@ -25,4 +25,3 @@ func (d actualDatabase) UpdateTenant(id int, tenantUpdate TenantUpdate) (domain.
 func (d actualDatabase) DeleteTenant(id int) (domain.Tenant, bool) {
 	return domain.Tenant{}, false
 }
-

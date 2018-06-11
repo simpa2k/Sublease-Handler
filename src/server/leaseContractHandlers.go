@@ -1,11 +1,11 @@
 package server
 
 import (
-	"subLease/src/server/database"
-	"net/http"
 	"encoding/json"
-	"strconv"
 	"github.com/gorilla/mux"
+	"net/http"
+	"strconv"
+	"subLease/src/server/database"
 	"subLease/src/server/domain"
 	"time"
 )
@@ -54,11 +54,11 @@ func updateLeaseContractHandler(db database.Database) func(w http.ResponseWriter
 		tenantId, err := strconv.Atoi(queryValues.Get("tenant"))
 		apartmentId, err := strconv.Atoi(queryValues.Get("apartment"))
 
-		leaseContractUpdate := database.LeaseContractUpdate {
-			From: &from,
-			To: &to,
-			Owner: &ownerId,
-			Tenant: &tenantId,
+		leaseContractUpdate := database.LeaseContractUpdate{
+			From:      &from,
+			To:        &to,
+			Owner:     &ownerId,
+			Tenant:    &tenantId,
 			Apartment: &apartmentId,
 		}
 
@@ -77,4 +77,3 @@ func deleteLeaseContractHandler(database database.Database) func(w http.Response
 		}
 	}
 }
-

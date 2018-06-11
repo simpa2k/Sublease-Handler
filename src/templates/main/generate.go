@@ -1,12 +1,11 @@
 package main
 
 import (
-	"os"
-	"strings"
-	"io/ioutil"
-	"text/template"
 	"fmt"
+	"os"
 	"regexp"
+	"strings"
+	"text/template"
 )
 
 type Operation struct {
@@ -14,16 +13,17 @@ type Operation struct {
 }
 
 type EntityDefinition struct {
-	Entity string
+	Entity       string
 	Abbreviation string
 	//Fields map[string]string
 	Fields []Field
 }
 
 type modifier int
+
 const (
 	unmodified modifier = iota
-	slice	   modifier = iota
+	slice      modifier = iota
 )
 
 type Field struct {
@@ -35,13 +35,13 @@ type Field struct {
 }
 
 func main() {
-	domainEntities := []EntityDefinition {
-		{"apartment", "a", []Field {
+	domainEntities := []EntityDefinition{
+		{"apartment", "a", []Field{
 			{"Id", "int", false, false, unmodified},
-			{"Number","int", false, false, unmodified},
-			{"Address", "address.Address",false, true, unmodified},
+			{"Number", "int", false, false, unmodified},
+			{"Address", "address.Address", false, true, unmodified},
 		}},
-		{"lease_contract", "lc", []Field {
+		{"lease_contract", "lc", []Field{
 			{"Id", "int", false, false, unmodified},
 			{"From", "time.Time", false, true, unmodified},
 			{"To", "time.Time", false, true, unmodified},
@@ -49,16 +49,16 @@ func main() {
 			{"Tenant", "Tenant", true, true, unmodified},
 			{"Apartment", "Apartment", true, true, unmodified},
 		}},
-		{"owner", "o", []Field {
+		{"owner", "o", []Field{
 			{"Id", "int", false, false, unmodified},
 			{"FirstName", "string", false, false, unmodified},
 			{"LastName", "string", false, false, unmodified},
 			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
 			{"Apartments", "[]Apartment", true, true, slice},
 		}},
-		{"tenant", "t", []Field {
-			{"Id","int", false, false, unmodified},
-			{"FirstName","string", false, false, unmodified},
+		{"tenant", "t", []Field{
+			{"Id", "int", false, false, unmodified},
+			{"FirstName", "string", false, false, unmodified},
 			{"LastName", "string", false, false, unmodified},
 			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
 		}},
@@ -102,12 +102,17 @@ func main() {
 		"BuildEquals":                     buildEquals,
 		"RemoveQualificationIfDomainType": removeQualificationIfDomainType,
 		"IsSliceType":                     isSliceType,
-		"RequiresQuery":				   requiresQuery,
-		"FilterFieldsFromConstructor":	   filterFieldsFromConstructor,
+		"RequiresQuery":                   requiresQuery,
+		"FilterFieldsFromConstructor":     filterFieldsFromConstructor,
 	}
 
-	generateMockOperations(domainEntities, funcMap, os.Args[1], os.Args[2])
-	generateEntities(domainEntities, funcMap, os.Args[1], os.Args[3], os.Args[4])
+	for _, entityDefinition := range domainEntities {
+		generateDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[4])
+		generateMockDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[2])
+		generateDomainEntity(entityDefinition, funcMap, os.Args[1], os.Args[3])
+		generateDomainEntityUpdate(entityDefinition, funcMap, os.Args[1], os.Args[4])
+	}
+	generateDatabase(domainEntities, funcMap, os.Args[1], os.Args[4])
 }
 
 func setComplexTypes(domainEntities map[string]map[string]string) map[string]struct{} {
@@ -124,56 +129,62 @@ func setComplexTypes(domainEntities map[string]map[string]string) map[string]str
 	return complexTypes
 }
 
-func generateMockOperations(domainEntities []EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
-	for _, entity := range domainEntities {
-		//op := Operation{ToPascalCase(entity.Entity)}
-		op := Operation{entity.Entity}
-		templateText, err := ioutil.ReadFile(templateRoot + "operations.tmpl")
-		check(err)
-
-		t, err := template.New("operation").Funcs(funcMap).Parse(string(templateText))
-		check(err)
-
-		f, err := os.Create(fmt.Sprintf("%s%sOperations.go", outputPath, ToCamelCase(entity.Entity)))
-		check(err)
-		err = t.Execute(f, op)
-		check(err)
-	}
+func generateDatabase(domainEntities []EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	t, err := template.New("database.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "database.tmpl")
+	check(err)
+	f, err := os.Create(fmt.Sprintf("%sdatabase.go", outputPath))
+	check(err)
+	err = t.Execute(f, domainEntities)
+	check(err)
 }
 
-func generateEntities(domainEntities []EntityDefinition, funcMap template.FuncMap, templateRoot string, entityOutputPath string, entityUpdateOutputPath string) {
+func generateDatabaseOperations(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	generateOperations(domainEntity, funcMap, templateRoot, "database_operations.tmpl", outputPath)
+}
 
-	for _, entityDefinition := range domainEntities {
+func generateMockDatabaseOperations(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	generateOperations(domainEntity, funcMap, templateRoot, "mock_database_operations.tmpl", outputPath)
+}
 
-		t, err := template.New("domain_entity.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "domain_entity.tmpl")
-		check(err)
-		err = t.Execute(os.Stdout, entityDefinition)
-		check(err)
+func generateOperations(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, templateName string, outputPath string) {
+	t, err := template.New(templateName).Funcs(funcMap).ParseFiles(templateRoot + templateName)
+	check(err)
 
-		f, err := os.Create(fmt.Sprintf("%s%s.go", entityOutputPath, ToCamelCase(entityDefinition.Entity)))
-		check(err)
-		err = t.Execute(f, entityDefinition)
-		check(err)
+	f, err := os.Create(fmt.Sprintf("%s%sOperations.go", outputPath, ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
 
-		for i, field := range entityDefinition.Fields {
-			if field.IsDomainEntity {
-				if field.TypeModifier == slice {
-					field.TypeDeclaration = "[]int" // Updates only use ids for referencing domain entities
-				} else {
-					field.TypeDeclaration = "int"
-				}
+func generateDomainEntity(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	t, err := template.New("domain_entity.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "domain_entity.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%s%s.go", outputPath, ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
+
+func generateDomainEntityUpdate(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	for i, field := range domainEntity.Fields {
+		if field.IsDomainEntity {
+			if field.TypeModifier == slice {
+				field.TypeDeclaration = "[]int" // Updates only use ids for referencing domain entities
+			} else {
+				field.TypeDeclaration = "int"
 			}
-			entityDefinition.Fields[i] = field
 		}
-
-		t, err = template.New("entity_update.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "entity_update.tmpl")
-		check(err)
-
-		f, err = os.Create(fmt.Sprintf("%s%sUpdate.go", entityUpdateOutputPath, ToCamelCase(entityDefinition.Entity)))
-		check(err)
-		err = t.Execute(f, entityDefinition)
-		check(err)
+		domainEntity.Fields[i] = field
 	}
+
+	t, err := template.New("entity_update.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "entity_update.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%s%sUpdate.go", outputPath, ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
 }
 
 func ToPascalCase(snakeCased string) string {
@@ -198,7 +209,7 @@ func toSnakeCase(s string) string {
 	var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
 
 	snake := matchFirstCap.ReplaceAllString(s, "${1}_${2}")
-	snake  = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
 }
 

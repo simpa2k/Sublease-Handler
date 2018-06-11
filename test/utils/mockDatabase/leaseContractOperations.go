@@ -2,9 +2,12 @@
 package mockDatabase
 
 import (
-	"subLease/src/server/database"
 	"subLease/src/server/domain"
+	"subLease/src/server/database"
 )
+
+
+
 
 func (d mockDatabase) GetLeaseContracts() []domain.LeaseContract {
 	return d.leaseContracts
@@ -49,7 +52,7 @@ func (d *mockDatabase) UpdateLeaseContract(id int, leaseContractUpdate database.
 	return domain.LeaseContract{}, false
 }
 
-func indexOfLeaseContract(leaseContracts []domain.LeaseContract, id int) int {
+func indexOfLeaseContract(leaseContracts []domain.LeaseContract, id int) (int) {
 	for i, leaseContract := range leaseContracts {
 		if leaseContract.Id == id {
 			return i
@@ -58,7 +61,7 @@ func indexOfLeaseContract(leaseContracts []domain.LeaseContract, id int) int {
 	return -1
 }
 
-func (d *mockDatabase) DeleteLeaseContract(id int) (domain.LeaseContract, bool) {
+func (d* mockDatabase) DeleteLeaseContract(id int) (domain.LeaseContract, bool) {
 	leaseContractToRemove := domain.LeaseContract{}
 	found := false
 	j := 0
@@ -74,3 +77,4 @@ func (d *mockDatabase) DeleteLeaseContract(id int) (domain.LeaseContract, bool) 
 	d.leaseContracts = d.leaseContracts[:j]
 	return leaseContractToRemove, found
 }
+

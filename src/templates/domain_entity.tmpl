@@ -10,7 +10,7 @@ type {{ $pascalCased }} struct {
 {{ end }}
 }
 
-{{ $filteredDecapitalizedFields := .Fields | FilterFieldsFromConstructor | DecapitalizeSlice }}
+{{ $filteredDecapitalizedFields := .Fields | NoIdField | DecapitalizeSlice }}
 func Create{{ $pascalCased }}({{ $filteredDecapitalizedFields | CommaSeparate }}) {{ $pascalCased }} {
     return {{ $pascalCased }} {
     {{- range $filteredDecapitalizedFields }}

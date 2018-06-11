@@ -1,3 +1,4 @@
+//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../utils/mockDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
 package server
 
 import (
@@ -82,9 +83,9 @@ func TestUpdateOwnerUpdatesAllValues(t *testing.T) {
 		Value string
 	}{
 		{"id", "1"},
-		{"firstname", newFirstName},
-		{"lastname", newLastName},
-		{"socialsecuritynumber", string(newSocialSecurityNumberJSONBytes)},
+		{"firstName", newFirstName},
+		{"lastName", newLastName},
+		{"socialSecurityNumber", string(newSocialSecurityNumberJSONBytes)},
 		{"apartments", string(newApartmentIdsJSONBytes)},
 	})
 

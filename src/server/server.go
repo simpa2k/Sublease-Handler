@@ -1,10 +1,11 @@
 package server
 
 import (
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"subLease/src/server/database"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {

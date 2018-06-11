@@ -59,16 +59,17 @@ func main() {
 	}
 
 	funcMap := template.FuncMap{
-		"Capitalize":                  func(s string) string { return applyToFirstCharacter(s, strings.ToUpper) },
-		"Decapitalize":                func(s string) string { return applyToFirstCharacter(s, strings.ToLower) },
-		"DecapitalizeSlice":           decapitalizeSlice,
-		"PascalCase":                  ToPascalCase,
-		"CamelCase":                   ToCamelCase,
-		"CommaSeparate":               commaSeparate,
-		"BuildEquals":                 buildEquals,
-		"IsSliceType":                 isSliceType,
-		"RequiresQuery":               requiresQuery,
-		"FilterFieldsFromConstructor": filterFieldsFromConstructor,
+		"Capitalize":                 func(s string) string { return applyToFirstCharacter(s, strings.ToUpper) },
+		"Decapitalize":               func(s string) string { return applyToFirstCharacter(s, strings.ToLower) },
+		"DecapitalizeSlice":          decapitalizeSlice,
+		"PascalCase":                 ToPascalCase,
+		"CamelCase":                  ToCamelCase,
+		"CommaSeparate":              commaSeparate,
+		"BuildEquals":                buildEquals,
+		"IsSliceType":                isSliceType,
+		"RequiresQuery":              requiresQuery,
+		"NoIdField":               noIdField,
+		"RetrieveFromQueryParameter": retrieveFromQueryParameter,
 	}
 
 	generate(domainEntities, funcMap)
@@ -80,6 +81,7 @@ func generate(domainEntities []EntityDefinition, funcMap template.FuncMap) {
 		generateMockDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[2])
 		generateDomainEntity(entityDefinition, funcMap, os.Args[1], os.Args[3])
 		generateDomainEntityUpdate(entityDefinition, funcMap, os.Args[1], os.Args[4])
+		generateHandlers(entityDefinition, funcMap, os.Args[1], os.Args[5])
 	}
 	generateDatabase(domainEntities, funcMap, os.Args[1], os.Args[4])
 }
@@ -122,6 +124,29 @@ func generateDomainEntity(domainEntity EntityDefinition, funcMap template.FuncMa
 }
 
 func generateDomainEntityUpdate(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	replaceDomainEntityTypesWithInt(domainEntity)
+
+	t, err := template.New("entity_update.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "entity_update.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%s%sUpdate.go", outputPath, ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
+
+func generateHandlers(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	replaceDomainEntityTypesWithInt(domainEntity)
+	t, err := template.New("handlers.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "handlers.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%s%sHandlers.go", outputPath, ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
+
+func replaceDomainEntityTypesWithInt(domainEntity EntityDefinition) {
 	for i, field := range domainEntity.Fields {
 		if field.IsDomainEntity { // Updates only use ids for referencing domain entities
 			if field.TypeModifier == slice {
@@ -132,14 +157,6 @@ func generateDomainEntityUpdate(domainEntity EntityDefinition, funcMap template.
 		}
 		domainEntity.Fields[i] = field
 	}
-
-	t, err := template.New("entity_update.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "entity_update.tmpl")
-	check(err)
-
-	f, err := os.Create(fmt.Sprintf("%s%sUpdate.go", outputPath, ToCamelCase(domainEntity.Entity)))
-	check(err)
-	err = t.Execute(f, domainEntity)
-	check(err)
 }
 
 func ToPascalCase(snakeCased string) string {
@@ -206,7 +223,7 @@ func requiresQuery(field Field) bool {
 	return field.IsDomainEntity && field.TypeModifier != slice
 }
 
-func filterFieldsFromConstructor(fields []Field) []Field {
+func noIdField(fields []Field) []Field {
 	var filtered []Field
 	for _, field := range fields {
 		if field.Identifier != "Id" {
@@ -228,6 +245,23 @@ func decapitalizeSlice(s []Field) []Field {
 
 func applyToFirstCharacter(s string, operation func(string) string) string {
 	return operation(string(s[0])) + s[1:]
+}
+
+func retrieveFromQueryParameter(valuesIdentifier string, dateLayout string, field Field) string {
+	retrieval := ""
+	fieldName := applyToFirstCharacter(field.Identifier, strings.ToLower)
+
+	if field.TypeDeclaration == "string" {
+		retrieval = fmt.Sprintf("%s := %s.Get(\"%s\")", fieldName, valuesIdentifier, fieldName)
+	} else if field.TypeDeclaration == "int" {
+		retrieval = fmt.Sprintf("%s, _ := strconv.Atoi(%s.Get(\"%s\"))", fieldName, valuesIdentifier, fieldName)
+	} else if field.TypeDeclaration == "time.Time" {
+		retrieval = fmt.Sprintf("%s, err := time.Parse(%s, %s.Get(\"%s\")); if err != nil { panic(err) }", fieldName, dateLayout, valuesIdentifier, fieldName)
+	} else if field.TypeModifier == slice || field.IsComplexType {
+		retrieval = fmt.Sprintf("var %s %s; _ = json.NewDecoder(strings.NewReader(%s.Get(\"%s\"))).Decode(&%s)", fieldName, field.TypeDeclaration, valuesIdentifier, fieldName, fieldName)
+	}
+
+	return retrieval
 }
 
 func check(err error) {

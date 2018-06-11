@@ -2,12 +2,9 @@
 package mockDatabase
 
 import (
-	"subLease/src/server/domain"
 	"subLease/src/server/database"
+	"subLease/src/server/domain"
 )
-
-
-
 
 func (d mockDatabase) GetApartments() []domain.Apartment {
 	return d.apartments
@@ -52,7 +49,7 @@ func (d *mockDatabase) UpdateApartment(id int, apartmentUpdate database.Apartmen
 	return domain.Apartment{}, false
 }
 
-func indexOfApartment(apartments []domain.Apartment, id int) (int) {
+func indexOfApartment(apartments []domain.Apartment, id int) int {
 	for i, apartment := range apartments {
 		if apartment.Id == id {
 			return i
@@ -61,7 +58,7 @@ func indexOfApartment(apartments []domain.Apartment, id int) (int) {
 	return -1
 }
 
-func (d* mockDatabase) DeleteApartment(id int) (domain.Apartment, bool) {
+func (d *mockDatabase) DeleteApartment(id int) (domain.Apartment, bool) {
 	apartmentToRemove := domain.Apartment{}
 	found := false
 	j := 0
@@ -77,4 +74,3 @@ func (d* mockDatabase) DeleteApartment(id int) (domain.Apartment, bool) {
 	d.apartments = d.apartments[:j]
 	return apartmentToRemove, found
 }
-

@@ -2,13 +2,14 @@
 package server
 
 import (
-	"subLease/src/server/database"
-	"net/http"
 	"encoding/json"
+	"net/http"
 	"strconv"
-	"github.com/gorilla/mux"
+	"subLease/src/server/database"
 	"subLease/src/server/domain"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func getLeaseContractsHandler(database database.Database) func(w http.ResponseWriter, r *http.Request) {
@@ -37,27 +38,52 @@ func createLeaseContractHandler(database database.Database) func(w http.Response
 
 func updateLeaseContractHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-	    queryValues := r.URL.Query()
-        strconv.Atoi(id)
-        time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", from)
-        time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", to)
-        strconv.Atoi(owner)
-        strconv.Atoi(tenant)
-        strconv.Atoi(apartment)
+		var id int
 
-		leaseContractUpdate := database.LeaseContractUpdate{
-            From: &from,
-            To: &to,
-            Owner: &owner,
-            Tenant: &tenant,
-            Apartment: &apartment,
-		}
+		queryValues := r.URL.Query()
+		leaseContractUpdate := database.LeaseContractUpdate{}
+
+		retrieveInt("id", queryValues, func(idString string) (int, error) {
+			return strconv.Atoi(idString)
+		}, func(parsedId int) {
+			id = parsedId
+		})
+
+		retrieveTime("from", queryValues, func(fromString string) (time.Time, error) {
+			return time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fromString)
+		}, func(parsedFrom time.Time) {
+			leaseContractUpdate.From = &parsedFrom
+		})
+
+		retrieveTime("to", queryValues, func(toString string) (time.Time, error) {
+			return time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", toString)
+		}, func(parsedTo time.Time) {
+			leaseContractUpdate.To = &parsedTo
+		})
+
+		retrieveInt("owner", queryValues, func(ownerString string) (int, error) {
+			return strconv.Atoi(ownerString)
+		}, func(parsedOwner int) {
+			leaseContractUpdate.Owner = &parsedOwner
+		})
+
+		retrieveInt("tenant", queryValues, func(tenantString string) (int, error) {
+			return strconv.Atoi(tenantString)
+		}, func(parsedTenant int) {
+			leaseContractUpdate.Tenant = &parsedTenant
+		})
+
+		retrieveInt("apartment", queryValues, func(apartmentString string) (int, error) {
+			return strconv.Atoi(apartmentString)
+		}, func(parsedApartment int) {
+			leaseContractUpdate.Apartment = &parsedApartment
+		})
 
 		updatedLeaseContract, foundLeaseContractWithId := db.UpdateLeaseContract(id, leaseContractUpdate)
 		if foundLeaseContractWithId {
 			json.NewEncoder(w).Encode(updatedLeaseContract)
 		} else {
-            http.Error(w, "No lease contract with that id was found.", http.StatusBadRequest)
+			http.Error(w, "No lease contract with that id was found.", http.StatusBadRequest)
 		}
 	}
 }

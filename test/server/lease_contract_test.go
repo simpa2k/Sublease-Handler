@@ -5,6 +5,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"strconv"
 	"subLease/src/server/database"
 	"subLease/src/server/domain"
@@ -12,7 +13,6 @@ import (
 	"subLease/test/utils/mockDatabase"
 	"testing"
 	"time"
-	"net/http"
 )
 
 func TestGetLeaseContracts(t *testing.T) {
@@ -131,7 +131,7 @@ func TestUpdateNonExistingLeaseContractReturnsBadRequest(t *testing.T) {
 	}
 }
 
-func getNewLeaseContract() (domain.LeaseContract) {
+func getNewLeaseContract() domain.LeaseContract {
 	newFrom := time.Date(2018, time.July, 16, 0, 0, 0, 0, time.Local)
 	newTo := time.Date(2019, time.July, 16, 0, 0, 0, 0, time.Local)
 	newOwner := mockDatabase.GetSampleOwner2(mockDatabase.GetSampleApartment2())

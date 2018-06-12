@@ -2,12 +2,9 @@
 package mockDatabase
 
 import (
-	"subLease/src/server/domain"
 	"subLease/src/server/database"
+	"subLease/src/server/domain"
 )
-
-
-
 
 func (d mockDatabase) GetOwners() []domain.Owner {
 	return d.owners
@@ -52,7 +49,7 @@ func (d *mockDatabase) UpdateOwner(id int, ownerUpdate database.OwnerUpdate) (do
 	return domain.Owner{}, false
 }
 
-func indexOfOwner(owners []domain.Owner, id int) (int) {
+func indexOfOwner(owners []domain.Owner, id int) int {
 	for i, owner := range owners {
 		if owner.Id == id {
 			return i
@@ -61,7 +58,7 @@ func indexOfOwner(owners []domain.Owner, id int) (int) {
 	return -1
 }
 
-func (d* mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
+func (d *mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
 	ownerToRemove := domain.Owner{}
 	found := false
 	j := 0
@@ -77,4 +74,3 @@ func (d* mockDatabase) DeleteOwner(id int) (domain.Owner, bool) {
 	d.owners = d.owners[:j]
 	return ownerToRemove, found
 }
-

@@ -3,49 +3,47 @@ package database
 
 import (
 	"subLease/src/server/domain"
+	"time"
 )
 
-
-
 type LeaseContractUpdate struct {
-    Id *int
-    From *time.Time
-    To *time.Time
-    Owner *int
-    Tenant *int
-    Apartment *int
+	Id        *int
+	From      *time.Time
+	To        *time.Time
+	Owner     *int
+	Tenant    *int
+	Apartment *int
 }
 
 func (lc *LeaseContractUpdate) UpdateLeaseContractWithValuesFrom(e *domain.LeaseContract, database Database) {
-    if lc.Id != nil {
+	if lc.Id != nil {
 		e.Id = *lc.Id
-    }
-    if lc.From != nil {
+	}
+	if lc.From != nil {
 		e.From = *lc.From
-    }
-    if lc.To != nil {
+	}
+	if lc.To != nil {
 		e.To = *lc.To
-    }
-    if lc.Owner != nil {
-        
-		if owner, found := database.GetOwner(*lc.Owner); found {
-            e.Owner = owner
-		}
-        
-    }
-    if lc.Tenant != nil {
-        
-		if tenant, found := database.GetTenant(*lc.Tenant); found {
-            e.Tenant = tenant
-		}
-        
-    }
-    if lc.Apartment != nil {
-        
-		if apartment, found := database.GetApartment(*lc.Apartment); found {
-            e.Apartment = apartment
-		}
-        
-    }
-}
+	}
+	if lc.Owner != nil {
 
+		if owner, found := database.GetOwner(*lc.Owner); found {
+			e.Owner = owner
+		}
+
+	}
+	if lc.Tenant != nil {
+
+		if tenant, found := database.GetTenant(*lc.Tenant); found {
+			e.Tenant = tenant
+		}
+
+	}
+	if lc.Apartment != nil {
+
+		if apartment, found := database.GetApartment(*lc.Apartment); found {
+			e.Apartment = apartment
+		}
+
+	}
+}

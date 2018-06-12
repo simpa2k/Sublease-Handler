@@ -39,6 +39,7 @@ func createOwnerHandler(database database.Database) func(w http.ResponseWriter, 
 
 func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var errors []string
 		var id int
 
 		queryValues := r.URL.Query()
@@ -46,19 +47,19 @@ func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *htt
 
 		retrieveInt("id", queryValues, func(idString string) (int, error) {
 			return strconv.Atoi(idString)
-		}, func(parsedId int) {
+		}, &errors, func(parsedId int) {
 			id = parsedId
 		})
 
 		retrieveString("firstName", queryValues, func(firstNameString string) (string, error) {
 			return firstNameString, nil
-		}, func(parsedFirstName string) {
+		}, &errors, func(parsedFirstName string) {
 			ownerUpdate.FirstName = &parsedFirstName
 		})
 
 		retrieveString("lastName", queryValues, func(lastNameString string) (string, error) {
 			return lastNameString, nil
-		}, func(parsedLastName string) {
+		}, &errors, func(parsedLastName string) {
 			ownerUpdate.LastName = &parsedLastName
 		})
 
@@ -66,7 +67,7 @@ func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *htt
 			var socialSecurityNumber socialSecurityNumber.SocialSecurityNumber
 			err := json.NewDecoder(strings.NewReader(socialSecurityNumberString)).Decode(&socialSecurityNumber)
 			return socialSecurityNumber, err
-		}, func(parsedSocialSecurityNumber socialSecurityNumber.SocialSecurityNumber) {
+		}, &errors, func(parsedSocialSecurityNumber socialSecurityNumber.SocialSecurityNumber) {
 			ownerUpdate.SocialSecurityNumber = &parsedSocialSecurityNumber
 		})
 
@@ -74,9 +75,16 @@ func updateOwnerHandler(db database.Database) func(w http.ResponseWriter, r *htt
 			var apartment []int
 			err := json.NewDecoder(strings.NewReader(apartmentsString)).Decode(&apartment)
 			return apartment, err
-		}, func(parsedApartments []int) {
+		}, &errors, func(parsedApartments []int) {
 			ownerUpdate.Apartments = &parsedApartments
 		})
+
+		if len(errors) > 0 {
+			jsonError, _ := json.Marshal(errors)
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, string(jsonError), http.StatusBadRequest)
+			return
+		}
 
 		updatedOwner, foundOwnerWithId := db.UpdateOwner(id, ownerUpdate)
 		if foundOwnerWithId {

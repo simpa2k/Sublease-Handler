@@ -30,6 +30,8 @@ func create{{ $pascalCased }}Handler(database database.Database) func(w http.Res
 
 func update{{ $pascalCased }}Handler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+	    {{- $errorsSliceIdentifier := "errors" }}
+	    var {{ $errorsSliceIdentifier }} []string
 	    {{- $idIdentifier := "id" }}
 	    var {{ $idIdentifier }} int
 	    {{ $valuesIdentifier := "queryValues" }}
@@ -42,7 +44,7 @@ func update{{ $pascalCased }}Handler(db database.Database) func(w http.ResponseW
         {{- $parsedValueIdentifier := print "parsed" ($formattedIdentifier | Capitalize) }}
         retrieve{{ .TypeDeclaration | FormatTypeDeclaration }}("{{ $formattedIdentifier }}", {{ $valuesIdentifier }}, func({{ $stringValueIdentifier }} string) ({{ .TypeDeclaration }}, error) {
             {{ call .FromStringConverter $stringValueIdentifier }}
-        }, func ({{ $parsedValueIdentifier }} {{ .TypeDeclaration }}) {
+        }, &{{ $errorsSliceIdentifier }}, func ({{ $parsedValueIdentifier }} {{ .TypeDeclaration }}) {
             {{- if eq $formattedIdentifier $idIdentifier }}
             {{ call .HandlerFunction "id" $parsedValueIdentifier }}
             {{- else }}
@@ -50,6 +52,13 @@ func update{{ $pascalCased }}Handler(db database.Database) func(w http.ResponseW
             {{- end }}
         })
         {{ end }}
+
+        if len({{ $errorsSliceIdentifier }}) > 0 {
+            jsonError, _ := json.Marshal({{ $errorsSliceIdentifier }})
+            w.Header().Set("Content-Type", "application/json")
+            http.Error(w, string(jsonError), http.StatusBadRequest)
+            return
+        }
 
 		updated{{ $pascalCased }}, found{{ $pascalCased }}WithId := db.Update{{ $pascalCased }}(id, {{ $camelCased }}Update)
 		if found{{ $pascalCased }}WithId {

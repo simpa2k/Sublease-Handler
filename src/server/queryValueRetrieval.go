@@ -1,67 +1,68 @@
 package server
 
 import (
+	"fmt"
 	"net/url"
 	"subLease/src/server/address"
 	"subLease/src/server/socialSecurityNumber"
 	"time"
 )
 
-func retrieveInt(key string, queryValues url.Values, converterFunction func(s string) (int, error), handlerFunction func(int)) {
+func retrieveInt(key string, queryValues url.Values, converterFunction func(s string) (int, error), errorMessages *[]string, handlerFunction func(int)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}
 }
 
-func retrieveAddress(key string, queryValues url.Values, converterFunction func(s string) (address.Address, error), handlerFunction func(address.Address)) {
+func retrieveAddress(key string, queryValues url.Values, converterFunction func(s string) (address.Address, error), errorMessages *[]string, handlerFunction func(address.Address)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}
 }
 
-func retrieveTime(key string, queryValues url.Values, converterFunction func(s string) (time.Time, error), handlerFunction func(time.Time)) {
+func retrieveTime(key string, queryValues url.Values, converterFunction func(s string) (time.Time, error), errorMessages *[]string, handlerFunction func(time.Time)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}
 }
 
-func retrieveString(key string, queryValues url.Values, converterFunction func(s string) (string, error), handlerFunction func(string)) {
+func retrieveString(key string, queryValues url.Values, converterFunction func(s string) (string, error), errorMessages *[]string, handlerFunction func(string)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}
 }
 
-func retrieveSocialSecurityNumber(key string, queryValues url.Values, converterFunction func(s string) (socialSecurityNumber.SocialSecurityNumber, error), handlerFunction func(socialSecurityNumber.SocialSecurityNumber)) {
+func retrieveSocialSecurityNumber(key string, queryValues url.Values, converterFunction func(s string) (socialSecurityNumber.SocialSecurityNumber, error), errorMessages *[]string, handlerFunction func(socialSecurityNumber.SocialSecurityNumber)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}
 }
 
-func retrieveIntSlice(key string, queryValues url.Values, converterFunction func(s string) ([]int, error), handlerFunction func([]int)) {
+func retrieveIntSlice(key string, queryValues url.Values, converterFunction func(s string) ([]int, error), errorMessages *[]string, handlerFunction func([]int)) {
 	if stringValue, present := retrieveIfPresent(key, queryValues); present {
 		value, err := converterFunction(stringValue)
 		if err != nil {
-			panic(err)
+			*errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
 		}
 		handlerFunction(value)
 	}

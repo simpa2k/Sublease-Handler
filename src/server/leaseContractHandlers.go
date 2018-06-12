@@ -38,6 +38,7 @@ func createLeaseContractHandler(database database.Database) func(w http.Response
 
 func updateLeaseContractHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var errors []string
 		var id int
 
 		queryValues := r.URL.Query()
@@ -45,39 +46,46 @@ func updateLeaseContractHandler(db database.Database) func(w http.ResponseWriter
 
 		retrieveInt("id", queryValues, func(idString string) (int, error) {
 			return strconv.Atoi(idString)
-		}, func(parsedId int) {
+		}, &errors, func(parsedId int) {
 			id = parsedId
 		})
 
 		retrieveTime("from", queryValues, func(fromString string) (time.Time, error) {
 			return time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fromString)
-		}, func(parsedFrom time.Time) {
+		}, &errors, func(parsedFrom time.Time) {
 			leaseContractUpdate.From = &parsedFrom
 		})
 
 		retrieveTime("to", queryValues, func(toString string) (time.Time, error) {
 			return time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", toString)
-		}, func(parsedTo time.Time) {
+		}, &errors, func(parsedTo time.Time) {
 			leaseContractUpdate.To = &parsedTo
 		})
 
 		retrieveInt("owner", queryValues, func(ownerString string) (int, error) {
 			return strconv.Atoi(ownerString)
-		}, func(parsedOwner int) {
+		}, &errors, func(parsedOwner int) {
 			leaseContractUpdate.Owner = &parsedOwner
 		})
 
 		retrieveInt("tenant", queryValues, func(tenantString string) (int, error) {
 			return strconv.Atoi(tenantString)
-		}, func(parsedTenant int) {
+		}, &errors, func(parsedTenant int) {
 			leaseContractUpdate.Tenant = &parsedTenant
 		})
 
 		retrieveInt("apartment", queryValues, func(apartmentString string) (int, error) {
 			return strconv.Atoi(apartmentString)
-		}, func(parsedApartment int) {
+		}, &errors, func(parsedApartment int) {
 			leaseContractUpdate.Apartment = &parsedApartment
 		})
+
+		if len(errors) > 0 {
+			jsonError, _ := json.Marshal(errors)
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, string(jsonError), http.StatusBadRequest)
+			return
+		}
 
 		updatedLeaseContract, foundLeaseContractWithId := db.UpdateLeaseContract(id, leaseContractUpdate)
 		if foundLeaseContractWithId {

@@ -39,6 +39,7 @@ func createTenantHandler(database database.Database) func(w http.ResponseWriter,
 
 func updateTenantHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var errors []string
 		var id int
 
 		queryValues := r.URL.Query()
@@ -46,19 +47,19 @@ func updateTenantHandler(db database.Database) func(w http.ResponseWriter, r *ht
 
 		retrieveInt("id", queryValues, func(idString string) (int, error) {
 			return strconv.Atoi(idString)
-		}, func(parsedId int) {
+		}, &errors, func(parsedId int) {
 			id = parsedId
 		})
 
 		retrieveString("firstName", queryValues, func(firstNameString string) (string, error) {
 			return firstNameString, nil
-		}, func(parsedFirstName string) {
+		}, &errors, func(parsedFirstName string) {
 			tenantUpdate.FirstName = &parsedFirstName
 		})
 
 		retrieveString("lastName", queryValues, func(lastNameString string) (string, error) {
 			return lastNameString, nil
-		}, func(parsedLastName string) {
+		}, &errors, func(parsedLastName string) {
 			tenantUpdate.LastName = &parsedLastName
 		})
 
@@ -66,9 +67,16 @@ func updateTenantHandler(db database.Database) func(w http.ResponseWriter, r *ht
 			var socialSecurityNumber socialSecurityNumber.SocialSecurityNumber
 			err := json.NewDecoder(strings.NewReader(socialSecurityNumberString)).Decode(&socialSecurityNumber)
 			return socialSecurityNumber, err
-		}, func(parsedSocialSecurityNumber socialSecurityNumber.SocialSecurityNumber) {
+		}, &errors, func(parsedSocialSecurityNumber socialSecurityNumber.SocialSecurityNumber) {
 			tenantUpdate.SocialSecurityNumber = &parsedSocialSecurityNumber
 		})
+
+		if len(errors) > 0 {
+			jsonError, _ := json.Marshal(errors)
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, string(jsonError), http.StatusBadRequest)
+			return
+		}
 
 		updatedTenant, foundTenantWithId := db.UpdateTenant(id, tenantUpdate)
 		if foundTenantWithId {

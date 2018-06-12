@@ -39,6 +39,7 @@ func createApartmentHandler(database database.Database) func(w http.ResponseWrit
 
 func updateApartmentHandler(db database.Database) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var errors []string
 		var id int
 
 		queryValues := r.URL.Query()
@@ -46,13 +47,13 @@ func updateApartmentHandler(db database.Database) func(w http.ResponseWriter, r 
 
 		retrieveInt("id", queryValues, func(idString string) (int, error) {
 			return strconv.Atoi(idString)
-		}, func(parsedId int) {
+		}, &errors, func(parsedId int) {
 			id = parsedId
 		})
 
 		retrieveInt("number", queryValues, func(numberString string) (int, error) {
 			return strconv.Atoi(numberString)
-		}, func(parsedNumber int) {
+		}, &errors, func(parsedNumber int) {
 			apartmentUpdate.Number = &parsedNumber
 		})
 
@@ -60,9 +61,16 @@ func updateApartmentHandler(db database.Database) func(w http.ResponseWriter, r 
 			var address address.Address
 			err := json.NewDecoder(strings.NewReader(addressString)).Decode(&address)
 			return address, err
-		}, func(parsedAddress address.Address) {
+		}, &errors, func(parsedAddress address.Address) {
 			apartmentUpdate.Address = &parsedAddress
 		})
+
+		if len(errors) > 0 {
+			jsonError, _ := json.Marshal(errors)
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, string(jsonError), http.StatusBadRequest)
+			return
+		}
 
 		updatedApartment, foundApartmentWithId := db.UpdateApartment(id, apartmentUpdate)
 		if foundApartmentWithId {

@@ -1,11 +1,11 @@
 package server
 
 {{ range . }}
-func retrieve{{ . | FormatTypeDeclaration }}(key string, queryValues url.Values, converterFunction func(s string) ({{ . }}, error), handlerFunction func({{ . }})) {
+func retrieve{{ . | FormatTypeDeclaration }}(key string, queryValues url.Values, converterFunction func(s string) ({{ . }}, error), errorMessages *[]string, handlerFunction func({{ . }})) {
     if stringValue, present := retrieveIfPresent(key, queryValues); present {
         value, err := converterFunction(stringValue)
         if err != nil {
-            panic(err)
+            *errorMessages = append(*errorMessages, fmt.Sprintf("Error while parsing query parameter %s. Error: %s", key, err.Error()))
         }
         handlerFunction(value)
     }

@@ -109,6 +109,41 @@ func TestUpdateLeaseContractWithNoQueryParametersSetDoesNothing(t *testing.T) {
 	}
 }
 
+func TestAllUnparsableQueryParametersAreReportedAsErrors(t *testing.T) {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "a"},
+		{"from", "2/6 2018"},
+		{"to", "2/6 2019"},
+		{"owner", "NaN"},
+		{"tenant", "y"},
+		{"apartment", "&"},
+	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+
+	utils.AssertResponseMatchesOracle(t, res, func() ([]byte, error) {
+		return json.Marshal([]string{
+			"Error while parsing query parameter id. Error: strconv.Atoi: parsing \"a\": invalid syntax",
+			"Error while parsing query parameter from. Error: parsing time \"2/6 2018\" as \"2006-01-02 15:04:05.999999999 -0700 MST\": cannot parse \"2018\" as \"2006\"",
+			"Error while parsing query parameter to. Error: parsing time \"2/6 2019\" as \"2006-01-02 15:04:05.999999999 -0700 MST\": cannot parse \"2019\" as \"2006\"",
+			"Error while parsing query parameter owner. Error: strconv.Atoi: parsing \"NaN\": invalid syntax",
+			"Error while parsing query parameter tenant. Error: strconv.Atoi: parsing \"y\": invalid syntax",
+			"Error while parsing query parameter apartment. Error: strconv.Atoi: parsing \"\u0026\": invalid syntax",
+		})
+	})
+
+	currentLeaseContract, _ := db.GetLeaseContract(1)
+	if !currentLeaseContract.Equal(&leaseContractBeforeRequest) {
+		t.Error("Lease contract was updated.")
+	}
+}
+
 func TestUpdateNonExistingLeaseContractReturnsBadRequest(t *testing.T) {
 	newLeaseContract := getNewLeaseContract()
 	completeUrl := utils.BuildQuery("/lease_contract", []struct {

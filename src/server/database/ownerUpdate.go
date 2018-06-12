@@ -3,33 +3,35 @@ package database
 
 import (
 	"subLease/src/server/domain"
-	"subLease/src/server/socialSecurityNumber"
 )
 
+
+
 type OwnerUpdate struct {
-	Id                   *int
-	FirstName            *string
-	LastName             *string
-	SocialSecurityNumber *socialSecurityNumber.SocialSecurityNumber
-	Apartments           *[]int
+    Id *int
+    FirstName *string
+    LastName *string
+    SocialSecurityNumber *socialSecurityNumber.SocialSecurityNumber
+    Apartments *[]int
 }
 
 func (o *OwnerUpdate) UpdateOwnerWithValuesFrom(e *domain.Owner, database Database) {
-	if o.Id != nil {
+    if o.Id != nil {
 		e.Id = *o.Id
-	}
-	if o.FirstName != nil {
+    }
+    if o.FirstName != nil {
 		e.FirstName = *o.FirstName
-	}
-	if o.LastName != nil {
+    }
+    if o.LastName != nil {
 		e.LastName = *o.LastName
-	}
-	if o.SocialSecurityNumber != nil {
+    }
+    if o.SocialSecurityNumber != nil {
 		e.SocialSecurityNumber = *o.SocialSecurityNumber
-	}
-	if o.Apartments != nil {
-
-		e.Apartments = database.GetApartmentsById(*o.Apartments)
-
-	}
+    }
+    if o.Apartments != nil {
+        
+            e.Apartments = database.GetApartmentsById(*o.Apartments)
+        
+    }
 }
+

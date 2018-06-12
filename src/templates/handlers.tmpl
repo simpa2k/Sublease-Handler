@@ -45,6 +45,8 @@ func update{{ $pascalCased }}Handler(db database.Database) func(w http.ResponseW
 		updated{{ $pascalCased }}, found{{ $pascalCased }}WithId := db.Update{{ $pascalCased }}(id, {{ $camelCased }}Update)
 		if found{{ $pascalCased }}WithId {
 			json.NewEncoder(w).Encode(updated{{ $pascalCased }})
+		} else {
+            http.Error(w, "No {{ $camelCased | CamelCaseToNormalText }} with that id was found.", http.StatusBadRequest)
 		}
 	}
 }

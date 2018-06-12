@@ -3,6 +3,9 @@ package database
 
 import "subLease/src/server/domain"
 
+
+
+
 func (d actualDatabase) GetOwners() []domain.Owner {
 	return make([]domain.Owner, 0, 0)
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"regexp"
+	"subLease/src/templates/queryValueRetrieval"
 )
 
 type EntityDefinition struct {
@@ -26,44 +28,102 @@ type Field struct {
 	IsDomainEntity  bool
 	IsComplexType   bool
 	TypeModifier    modifier
+	FromStringConverter string
+}
+
+func CreateIntField(identifier string) Field {
+	return Field{
+		Identifier: identifier,
+		TypeDeclaration: "int",
+		IsDomainEntity: false,
+		IsComplexType: false,
+		TypeModifier: unmodified,
+		FromStringConverter: fmt.Sprintf("strconv.Atoi(%s)", decapitalize(identifier)),
+	}
+}
+
+func CreateComplexField(identifier string, typeDeclaration string, isDomainEntity bool, typeModifier modifier) Field {
+	decapitalizedIdentifier := decapitalize(identifier)
+	return Field{
+		Identifier: identifier,
+		TypeDeclaration: typeDeclaration,
+		IsDomainEntity: isDomainEntity,
+		IsComplexType: true,
+		TypeModifier: typeModifier,
+		FromStringConverter: fmt.Sprintf("var %s %s; _ = json.NewDecoder(strings.NewReader(%s))).Decode(&%s)", decapitalizedIdentifier,  typeDeclaration, decapitalizedIdentifier, decapitalizedIdentifier),
+	}
+}
+
+func CreateTimeField(identifier string) Field {
+	return Field{
+		Identifier: identifier,
+		TypeDeclaration: "time.Time",
+		IsDomainEntity: false,
+		IsComplexType: false,
+		TypeModifier: unmodified,
+		FromStringConverter: fmt.Sprintf("time.Parse(\"2006-01-02 15:04:05.999999999 -0700 MST\", %s)", decapitalize(identifier)),
+	}
+}
+
+func CreateDomainEntityField(typeDeclaration string) Field {
+	return Field{
+		Identifier: typeDeclaration,
+		TypeDeclaration: typeDeclaration,
+		IsDomainEntity: true,
+		IsComplexType: true,
+		TypeModifier: unmodified,
+		FromStringConverter: fmt.Sprintf("strconv.Atoi(%s)", decapitalize(typeDeclaration)), // TODO: This will work since domain entities will always be passed as an id in query parameters, but it looks a bit strange here.
+	}
+}
+
+func CreateStringField(identifier string) Field {
+	return Field{
+		Identifier: identifier,
+		TypeDeclaration: "string",
+		IsDomainEntity: false,
+		IsComplexType: false,
+		TypeModifier: unmodified,
+		FromStringConverter: "s, nil", // TODO: This isn't very readable. It will be formatted as 'return s, nil' which will work, but not apparent that it will be called as a function.
+	}
 }
 
 func main() {
 	domainEntities := []EntityDefinition{
 		{"apartment", "a", []Field{
-			{"Id", "int", false, false, unmodified},
-			{"Number", "int", false, false, unmodified},
-			{"Address", "address.Address", false, true, unmodified},
+			CreateIntField("Id"),
+			CreateIntField("Number"),
+			CreateComplexField("Address", "address.Address", false, unmodified),
 		}},
 		{"lease_contract", "lc", []Field{
-			{"Id", "int", false, false, unmodified},
-			{"From", "time.Time", false, true, unmodified},
-			{"To", "time.Time", false, true, unmodified},
-			{"Owner", "Owner", true, true, unmodified},
-			{"Tenant", "Tenant", true, true, unmodified},
-			{"Apartment", "Apartment", true, true, unmodified},
+			CreateIntField("Id"),
+			CreateTimeField("From"),
+			CreateTimeField("To"),
+			CreateDomainEntityField("Owner"),
+			CreateDomainEntityField("Tenant"),
+			CreateDomainEntityField("Apartment"),
 		}},
 		{"owner", "o", []Field{
-			{"Id", "int", false, false, unmodified},
-			{"FirstName", "string", false, false, unmodified},
-			{"LastName", "string", false, false, unmodified},
-			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
-			{"Apartments", "[]Apartment", true, true, slice},
+			CreateIntField("Id"),
+			CreateStringField("FirstName"),
+			CreateStringField("LastName"),
+			CreateComplexField("SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, unmodified),
+			CreateComplexField("Apartments", "[]Apartment", true, slice),
 		}},
 		{"tenant", "t", []Field{
-			{"Id", "int", false, false, unmodified},
-			{"FirstName", "string", false, false, unmodified},
-			{"LastName", "string", false, false, unmodified},
-			{"SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, true, unmodified},
+			CreateIntField("Id"),
+			CreateStringField("FirstName"),
+			CreateStringField("LastName"),
+			CreateComplexField("SocialSecurityNumber", "socialSecurityNumber.SocialSecurityNumber", false, unmodified),
 		}},
 	}
 
 	funcMap := template.FuncMap{
 		"Capitalize":                 func(s string) string { return applyToFirstCharacter(s, strings.ToUpper) },
-		"Decapitalize":               func(s string) string { return applyToFirstCharacter(s, strings.ToLower) },
+		"Decapitalize":               decapitalize,
 		"DecapitalizeSlice":          decapitalizeSlice,
 		"PascalCase":                 ToPascalCase,
 		"CamelCase":                  ToCamelCase,
+		"CamelCaseToNormalText":	  camelCaseToNormalText,
 		"CommaSeparate":              commaSeparate,
 		"BuildEquals":                buildEquals,
 		"IsSliceType":                isSliceType,
@@ -76,13 +136,15 @@ func main() {
 }
 
 func generate(domainEntities []EntityDefinition, funcMap template.FuncMap) {
+	queryValueRetrievalGenerator := queryValueRetrieval.Create()
 	for _, entityDefinition := range domainEntities {
 		generateDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[4])
 		generateMockDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[2])
 		generateDomainEntity(entityDefinition, funcMap, os.Args[1], os.Args[3])
 		generateDomainEntityUpdate(entityDefinition, funcMap, os.Args[1], os.Args[4])
-		generateHandlers(entityDefinition, funcMap, os.Args[1], os.Args[5])
+		generateHandlers(entityDefinition, &queryValueRetrievalGenerator, funcMap, os.Args[1], os.Args[5])
 	}
+	queryValueRetrievalGenerator.Generate(os.Args[1], os.Args[5])
 	generateDatabase(domainEntities, funcMap, os.Args[1], os.Args[4])
 }
 
@@ -135,7 +197,11 @@ func generateDomainEntityUpdate(domainEntity EntityDefinition, funcMap template.
 	check(err)
 }
 
-func generateHandlers(domainEntity EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+func generateHandlers(domainEntity EntityDefinition, queryValueRetrievalGenerator *queryValueRetrieval.QueryValueRetrievalGenerator, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	for _, field := range domainEntity.Fields {
+		queryValueRetrievalGenerator.AddType(field.TypeDeclaration)
+	}
+
 	replaceDomainEntityTypesWithInt(domainEntity)
 	t, err := template.New("handlers.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "handlers.tmpl")
 	check(err)
@@ -173,6 +239,11 @@ func ToCamelCase(snakeCased string) string {
 	}
 
 	return camelCased
+}
+
+func camelCaseToNormalText(camelCased string) string {
+	regex := regexp.MustCompile("([A-Z])")
+	return strings.ToLower(regex.ReplaceAllString(camelCased, " $1"))
 }
 
 func commaSeparate(values []Field) string {
@@ -243,12 +314,16 @@ func decapitalizeSlice(s []Field) []Field {
 	return decapitalized
 }
 
+func decapitalize(s string) string {
+	return applyToFirstCharacter(s, strings.ToLower)
+}
+
 func applyToFirstCharacter(s string, operation func(string) string) string {
 	return operation(string(s[0])) + s[1:]
 }
 
 func retrieveFromQueryParameter(valuesIdentifier string, dateLayout string, field Field) string {
-	retrieval := ""
+	/*retrieval := ""
 	fieldName := applyToFirstCharacter(field.Identifier, strings.ToLower)
 
 	if field.TypeDeclaration == "string" {
@@ -261,7 +336,8 @@ func retrieveFromQueryParameter(valuesIdentifier string, dateLayout string, fiel
 		retrieval = fmt.Sprintf("var %s %s; _ = json.NewDecoder(strings.NewReader(%s.Get(\"%s\"))).Decode(&%s)", fieldName, field.TypeDeclaration, valuesIdentifier, fieldName, fieldName)
 	}
 
-	return retrieval
+	return retrieval*/
+	return field.FromStringConverter
 }
 
 func check(err error) {

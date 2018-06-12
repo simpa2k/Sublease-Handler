@@ -12,6 +12,7 @@ import (
 	"subLease/test/utils/mockDatabase"
 	"testing"
 	"time"
+	"net/http"
 )
 
 func TestGetLeaseContracts(t *testing.T) {
@@ -53,35 +54,21 @@ func TestPostLeaseContract(t *testing.T) {
 }
 
 func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
-	newFrom := time.Date(2018, time.July, 16, 0, 0, 0, 0, time.Local)
-	newTo := time.Date(2019, time.July, 16, 0, 0, 0, 0, time.Local)
-	newOwner := mockDatabase.GetSampleOwner2(mockDatabase.GetSampleApartment2())
-	newTenant := mockDatabase.GetSampleTenant2()
-	newApartment := mockDatabase.GetSampleApartment2()
-
-	newLeaseContract := domain.CreateLeaseContract(
-		newFrom,
-		newTo,
-		newOwner,
-		newTenant,
-		newApartment,
-	)
-	newLeaseContract.Id = 1
-
-	r, db := utils.SetupServerWithMockDatabase()
-	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
-
+	newLeaseContract := getNewLeaseContract()
 	completeUrl := utils.BuildQuery("/lease_contract", []struct {
 		Key   string
 		Value string
 	}{
 		{"id", "1"},
-		{"from", newFrom.String()},
-		{"to", newTo.String()},
-		{"owner", strconv.Itoa(newOwner.Id)},
-		{"tenant", strconv.Itoa(newTenant.Id)},
-		{"apartment", strconv.Itoa(newApartment.Id)},
+		{"from", newLeaseContract.From.String()},
+		{"to", newLeaseContract.To.String()},
+		{"owner", strconv.Itoa(newLeaseContract.Owner.Id)},
+		{"tenant", strconv.Itoa(newLeaseContract.Tenant.Id)},
+		{"apartment", strconv.Itoa(newLeaseContract.Apartment.Id)},
 	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
 
 	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
 
@@ -91,12 +78,75 @@ func TestUpdateLeaseContractUpdatesAllValues(t *testing.T) {
 
 	currentLeaseContract, _ := db.GetLeaseContract(1)
 	if !currentLeaseContract.Equal(&newLeaseContract) {
-		t.Error("Lease contract was not updated")
+		t.Error("Lease contract was not updated.")
 	}
 
 	if utils.ContainsLeaseContract(db.GetLeaseContracts(), leaseContractBeforeRequest) {
 		t.Error("Old lease contract was not removed.")
 	}
+}
+
+func TestUpdateLeaseContractWithNoQueryParametersSetDoesNothing(t *testing.T) {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "1"},
+	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+
+	utils.AssertResponseMatchesOracle(t, res, func() ([]byte, error) {
+		return json.Marshal(leaseContractBeforeRequest)
+	})
+
+	currentLeaseContract, _ := db.GetLeaseContract(1)
+	if !currentLeaseContract.Equal(&leaseContractBeforeRequest) {
+		t.Error("Lease contract was updated.")
+	}
+}
+
+func TestUpdateNonExistingLeaseContractReturnsBadRequest(t *testing.T) {
+	newLeaseContract := getNewLeaseContract()
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "2"},
+		{"from", newLeaseContract.From.String()},
+		{"to", newLeaseContract.To.String()},
+		{"owner", strconv.Itoa(newLeaseContract.Owner.Id)},
+		{"tenant", strconv.Itoa(newLeaseContract.Tenant.Id)},
+		{"apartment", strconv.Itoa(newLeaseContract.Apartment.Id)},
+	})
+
+	r, _ := utils.SetupServerWithMockDatabase()
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+	if res.Code != http.StatusBadRequest {
+		t.Error("Server did not respond with bad request.")
+	}
+}
+
+func getNewLeaseContract() (domain.LeaseContract) {
+	newFrom := time.Date(2018, time.July, 16, 0, 0, 0, 0, time.Local)
+	newTo := time.Date(2019, time.July, 16, 0, 0, 0, 0, time.Local)
+	newOwner := mockDatabase.GetSampleOwner2(mockDatabase.GetSampleApartment2())
+	newTenant := mockDatabase.GetSampleTenant2()
+	newApartment := mockDatabase.GetSampleApartment2()
+	newLeaseContract := domain.CreateLeaseContract(
+		newFrom,
+		newTo,
+		newOwner,
+		newTenant,
+		newApartment,
+	)
+	newLeaseContract.Id = 1
+
+	return newLeaseContract
 }
 
 func TestDeleteLeaseContract(t *testing.T) {

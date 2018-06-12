@@ -3,6 +3,9 @@ package database
 
 import "subLease/src/server/domain"
 
+
+
+
 func (d actualDatabase) GetLeaseContracts() []domain.LeaseContract {
 	return make([]domain.LeaseContract, 0, 0)
 }

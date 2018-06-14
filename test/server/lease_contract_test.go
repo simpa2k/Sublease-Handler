@@ -166,6 +166,75 @@ func TestUpdateNonExistingLeaseContractReturnsBadRequest(t *testing.T) {
 	}
 }
 
+func TestUpdateLeaseContractWithNonExistingOwnerReturnsBadRequest(t *testing.T) {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "1"},
+		{"owner", strconv.Itoa(3)},
+	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+	if res.Code != http.StatusBadRequest {
+		t.Error("Server did not respond with bad request.")
+	}
+
+	currentLeaseContract, _ := db.GetLeaseContract(1)
+	if !currentLeaseContract.Equal(&leaseContractBeforeRequest) {
+		t.Error("Lease contract was updated.")
+	}
+}
+
+func TestUpdateLeaseContractWithNonExistingTenantReturnsBadRequest(t *testing.T) {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "1"},
+		{"tenant", strconv.Itoa(3)},
+	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+	if res.Code != http.StatusBadRequest {
+		t.Error("Server did not respond with bad request.")
+	}
+
+	currentLeaseContract, _ := db.GetLeaseContract(1)
+	if !currentLeaseContract.Equal(&leaseContractBeforeRequest) {
+		t.Error("Lease contract was updated.")
+	}
+}
+
+func TestUpdateLeaseContractWithNonExistingApartmentReturnsBadRequest(t *testing.T) {
+	completeUrl := utils.BuildQuery("/lease_contract", []struct {
+		Key   string
+		Value string
+	}{
+		{"id", "1"},
+		{"apartment", strconv.Itoa(3)},
+	})
+
+	r, db := utils.SetupServerWithMockDatabase()
+	leaseContractBeforeRequest, _ := db.GetLeaseContract(1)
+
+	res := utils.RequestToServer(r, "PUT", completeUrl, nil)
+	if res.Code != http.StatusBadRequest {
+		t.Error("Server did not respond with bad request.")
+	}
+
+	currentLeaseContract, _ := db.GetLeaseContract(1)
+	if !currentLeaseContract.Equal(&leaseContractBeforeRequest) {
+		t.Error("Lease contract was updated.")
+	}
+}
+
 func getNewLeaseContract() domain.LeaseContract {
 	newFrom := time.Date(2018, time.July, 16, 0, 0, 0, 0, time.Local)
 	newTo := time.Date(2019, time.July, 16, 0, 0, 0, 0, time.Local)

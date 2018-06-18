@@ -1,4 +1,4 @@
-//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../../src/inMemoryDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
+//go:generate go run ../../src/codeGeneration/main/generate.go ../../src/templates/ ../../src/inMemoryDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
 package server
 
 import (

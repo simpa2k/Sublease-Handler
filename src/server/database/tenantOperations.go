@@ -18,8 +18,8 @@ func (d actualDatabase) GetTenantsById(ids []int) []domain.Tenant {
 	return make([]domain.Tenant, 0, 0)
 }
 
-func (d actualDatabase) CreateTenant(tenant domain.Tenant) []domain.Tenant {
-	return make([]domain.Tenant, 0, 0)
+func (d actualDatabase) CreateTenant(tenant domain.Tenant) int {
+	return -1
 }
 
 func (d actualDatabase) UpdateTenant(id int, tenantUpdate TenantUpdate) (domain.Tenant, error) {

@@ -57,7 +57,7 @@ func GetSampleOwner2(apartment domain.Apartment) domain.Owner {
 		"Sumon",
 		"Olafsen",
 		socialSecurityNumber.Create(
-			time.Date(19890, time.July, 2, 0, 0, 0, 0, time.Local),
+			time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local),
 			"071",
 			1),
 		[]domain.Apartment{apartment},

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"subLease/server"
-	"subLease/server/database"
+	"subLease/src/server"
+	"subLease/test/utils/mockDatabase"
 )
 
 func main() {
-	s := server.Create(database.Create())
+	s := server.Create(mockDatabase.Create())
 	s.Run()
 }

@@ -1,4 +1,4 @@
-//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../utils/mockDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
+//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../../src/inMemoryDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
 
 package server
 
@@ -30,6 +30,7 @@ func TestGetLeaseContract(t *testing.T) {
 
 func TestPostLeaseContract(t *testing.T) {
 	newLeaseContract := domain.LeaseContract{
+		Id:        2,
 		From:      time.Date(2018, time.July, 15, 0, 0, 0, 0, time.Local),
 		To:        time.Date(2019, time.July, 15, 0, 0, 0, 0, time.Local),
 		Owner:     mockDatabase.GetSampleOwner1(mockDatabase.GetSampleApartment1()),
@@ -40,12 +41,10 @@ func TestPostLeaseContract(t *testing.T) {
 	jsonBytes, _ := json.Marshal(newLeaseContract)
 
 	r, db := utils.SetupServerWithMockDatabase()
-	leaseContractsBeforeRequest := db.GetLeaseContracts()
-
 	res := utils.RequestToServer(r, "POST", "/lease_contract", bytes.NewReader(jsonBytes))
 
 	utils.AssertResponseMatchesOracle(t, res, func() ([]byte, error) {
-		return json.Marshal(append(leaseContractsBeforeRequest, newLeaseContract))
+		return json.Marshal(newLeaseContract.Id)
 	})
 
 	if !utils.ContainsLeaseContract(db.GetLeaseContracts(), newLeaseContract) {

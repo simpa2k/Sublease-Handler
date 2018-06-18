@@ -18,8 +18,8 @@ func (d actualDatabase) GetOwnersById(ids []int) []domain.Owner {
 	return make([]domain.Owner, 0, 0)
 }
 
-func (d actualDatabase) CreateOwner(owner domain.Owner) []domain.Owner {
-	return make([]domain.Owner, 0, 0)
+func (d actualDatabase) CreateOwner(owner domain.Owner) int {
+	return -1
 }
 
 func (d actualDatabase) UpdateOwner(id int, ownerUpdate OwnerUpdate) (domain.Owner, error) {

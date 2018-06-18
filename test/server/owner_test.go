@@ -1,4 +1,4 @@
-//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../utils/mockDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
+//go:generate go run ../../src/templates/main/generate.go ../../src/templates/ ../../src/inMemoryDatabase/ ../../src/server/domain/ ../../src/server/database/ ../../src/server/
 package server
 
 import (
@@ -29,6 +29,7 @@ func TestGetOwner(t *testing.T) {
 
 func TestPostOwner(t *testing.T) {
 	newOwner := domain.Owner{
+		Id:                   3,
 		FirstName:            "Sumon",
 		LastName:             "Olafsen",
 		SocialSecurityNumber: socialSecurityNumber.Create(time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local), "017", 1),
@@ -42,12 +43,10 @@ func TestPostOwner(t *testing.T) {
 	jsonBytes, _ := json.Marshal(newOwner)
 
 	r, db := utils.SetupServerWithMockDatabase()
-	ownersBeforeRequest := db.GetOwners()
-
 	res := utils.RequestToServer(r, "POST", "/owner", bytes.NewReader(jsonBytes))
 
 	utils.AssertResponseMatchesOracle(t, res, func() ([]byte, error) {
-		return json.Marshal(append(ownersBeforeRequest, newOwner))
+		return json.Marshal(newOwner.Id)
 	})
 
 	if !utils.ContainsOwner(db.GetOwners(), newOwner) {

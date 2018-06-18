@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"subLease/src/server/database"
 
+	"os"
+
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -20,7 +23,8 @@ func Create(database database.Database) Server {
 
 func (s Server) Run() {
 	r := s.SetupRouter()
-	if err := http.ListenAndServe(":3000", r); err != nil {
+	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+	if err := http.ListenAndServe(":3000", handlers.CORS()(loggedRouter)); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -12,7 +12,7 @@ type Database interface {
     Get{{ $pascalCased }}s() []domain.{{ $pascalCased }}
     Get{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool)
     Get{{ $pascalCased }}sById(id []int) []domain.{{ $pascalCased }}
-    Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) []domain.{{ $pascalCased }}
+    Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) int
     Update{{ $pascalCased }}(id int, {{ $camelCased }}Update {{ $pascalCased }}Update) (domain.{{ $pascalCased }}, error)
     Delete{{ $pascalCased }}(id int) (domain.{{ $pascalCased }}, bool)
 {{ end }}

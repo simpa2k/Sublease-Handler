@@ -18,8 +18,8 @@ func (d actualDatabase) GetApartmentsById(ids []int) []domain.Apartment {
 	return make([]domain.Apartment, 0, 0)
 }
 
-func (d actualDatabase) CreateApartment(apartment domain.Apartment) []domain.Apartment {
-	return make([]domain.Apartment, 0, 0)
+func (d actualDatabase) CreateApartment(apartment domain.Apartment) int {
+	return -1
 }
 
 func (d actualDatabase) UpdateApartment(id int, apartmentUpdate ApartmentUpdate) (domain.Apartment, error) {

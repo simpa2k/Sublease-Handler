@@ -18,8 +18,8 @@ func (d actualDatabase) Get{{ $pascalCased }}sById(ids []int) []domain.{{ $pasca
 	return make([]domain.{{ $pascalCased }}, 0, 0)
 }
 
-func (d actualDatabase) Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) []domain.{{ $pascalCased }} {
-	return make([]domain.{{ $pascalCased }}, 0, 0)
+func (d actualDatabase) Create{{ $pascalCased }}({{ $camelCased }} domain.{{ $pascalCased }}) int {
+	return -1
 }
 
 func (d actualDatabase) Update{{ $pascalCased }}(id int, {{ $camelCased }}Update {{ $pascalCased }}Update) (domain.{{ $pascalCased }}, error) {

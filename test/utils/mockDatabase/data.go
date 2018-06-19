@@ -43,7 +43,7 @@ func GetSampleOwner1(apartment domain.Apartment) domain.Owner {
 		"Olofsson",
 		socialSecurityNumber.Create(
 			time.Date(1989, time.June, 1, 0, 0, 0, 0, time.Local),
-			"071",
+			"111",
 			1),
 		[]domain.Apartment{apartment},
 	)
@@ -58,7 +58,7 @@ func GetSampleOwner2(apartment domain.Apartment) domain.Owner {
 		"Olafsen",
 		socialSecurityNumber.Create(
 			time.Date(1990, time.July, 2, 0, 0, 0, 0, time.Local),
-			"071",
+			"111",
 			1),
 		[]domain.Apartment{apartment},
 	)
@@ -73,7 +73,7 @@ func GetSampleTenant1() domain.Tenant {
 		LastName:  "Lainen",
 		SocialSecurityNumber: socialSecurityNumber.Create(
 			time.Date(1989, time.June, 1, 0, 0, 0, 0, time.Local),
-			"071",
+			"111",
 			1,
 		),
 	}
@@ -88,7 +88,7 @@ func GetSampleTenant2() domain.Tenant {
 		LastName: "Slemsson",
 		SocialSecurityNumber: socialSecurityNumber.Create(
 			time.Date(1066, time.October, 14, 0, 0, 0, 0, time.Local),
-			"071",
+			"111",
 			1,
 		),
 	}

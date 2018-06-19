@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"text/template"
-	"subLease/src/codeGeneration/server/queryValueRetrieval"
 	"subLease/src/codeGeneration"
+	"subLease/src/codeGeneration/server/queryValueRetrieval"
+	"text/template"
 )
 
 func main() {
@@ -34,10 +34,11 @@ func generate(domainEntities []codeGeneration.EntityDefinition, funcMap template
 	queryValueRetrievalGenerator := queryValueRetrieval.Create()
 	for _, entityDefinition := range domainEntities {
 		generateDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[4])
-		generateMockDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[2])
+		generateInMemoryDatabaseOperations(entityDefinition, funcMap, os.Args[1], os.Args[2])
 		generateDomainEntity(entityDefinition, funcMap, os.Args[1], os.Args[3])
 		generateDomainEntityUpdate(entityDefinition, funcMap, os.Args[1], os.Args[4])
 		generateHandlers(entityDefinition, &queryValueRetrievalGenerator, funcMap, os.Args[1], os.Args[5])
+		generateCommands(entityDefinition, funcMap, os.Args[1], os.Args[6])
 	}
 	queryValueRetrievalGenerator.Generate(os.Args[1], os.Args[5])
 	generateDatabase(domainEntities, funcMap, os.Args[1], os.Args[4])
@@ -53,11 +54,11 @@ func generateDatabase(domainEntities []codeGeneration.EntityDefinition, funcMap 
 }
 
 func generateDatabaseOperations(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
-	generateOperations(domainEntity, funcMap, templateRoot + "/server/", "database_operations.tmpl", outputPath)
+	generateOperations(domainEntity, funcMap, templateRoot+"/server/", "database_operations.tmpl", outputPath)
 }
 
-func generateMockDatabaseOperations(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
-	generateOperations(domainEntity, funcMap, templateRoot + "/inMemoryDatabase/", "in_memory_database_operations.tmpl", outputPath)
+func generateInMemoryDatabaseOperations(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	generateOperations(domainEntity, funcMap, templateRoot+"/inMemoryDatabase/", "in_memory_database_operations.tmpl", outputPath)
 }
 
 func generateOperations(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, templateName string, outputPath string) {
@@ -102,6 +103,31 @@ func generateHandlers(domainEntity codeGeneration.EntityDefinition, queryValueRe
 	check(err)
 
 	f, err := os.Create(fmt.Sprintf("%s%sHandlers.go", outputPath, codeGeneration.ToCamelCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
+
+func generateCommands(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	generatePostCommand(domainEntity, funcMap, templateRoot, outputPath)
+	generateListCommand(domainEntity, funcMap, templateRoot, outputPath)
+}
+
+func generatePostCommand(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	t, err := template.New("postCommand.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "client/postCommand.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%spost%sCommand.go", outputPath, codeGeneration.ToPascalCase(domainEntity.Entity)))
+	check(err)
+	err = t.Execute(f, domainEntity)
+	check(err)
+}
+
+func generateListCommand(domainEntity codeGeneration.EntityDefinition, funcMap template.FuncMap, templateRoot string, outputPath string) {
+	t, err := template.New("listCommand.tmpl").Funcs(funcMap).ParseFiles(templateRoot + "client/listCommand.tmpl")
+	check(err)
+
+	f, err := os.Create(fmt.Sprintf("%slist%ssCommand.go", outputPath, codeGeneration.ToPascalCase(domainEntity.Entity)))
 	check(err)
 	err = t.Execute(f, domainEntity)
 	check(err)

@@ -125,4 +125,3 @@ func assignmentToUpdateStructHandlerFunction(identifier string) func(string, str
 		return fmt.Sprintf("%s.%s = &%s", receiverIdentifier, Capitalize(identifier), parsedValueIdentifier)
 	}
 }
-

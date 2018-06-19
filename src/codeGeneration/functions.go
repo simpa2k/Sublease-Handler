@@ -1,11 +1,10 @@
 package codeGeneration
 
 import (
-	"strings"
-	"regexp"
 	"fmt"
+	"regexp"
+	"strings"
 )
-
 
 func ToPascalCase(snakeCased string) string {
 	spaced := strings.Replace(snakeCased, "_", " ", -1)
@@ -124,4 +123,3 @@ func RetrieveFromQueryParameter(valuesIdentifier string, dateLayout string, fiel
 
 	return retrieval
 }
-

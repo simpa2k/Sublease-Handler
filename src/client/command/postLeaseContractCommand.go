@@ -1,4 +1,4 @@
-package commands
+package command
 
 import (
 	"subLease/src/inMemoryDatabase"
@@ -20,10 +20,12 @@ func CreatePostLeaseContract(inMemoryData *inMemoryDatabase.InMemoryDatabase, cr
 
 func (plc *PostLeaseContract) Stage() bool {
 	if plc.createdLeaseContract == nil {
-		createdLeaseContract     := plc.creatorFunction(*plc.inMemoryData)
-		createdLeaseContractId   := plc.inMemoryData.CreateLeaseContract(createdLeaseContract)
-		createdLeaseContract.Id  = createdLeaseContractId
+		createdLeaseContract := plc.creatorFunction(*plc.inMemoryData)
+		createdLeaseContractId := plc.inMemoryData.CreateLeaseContract(createdLeaseContract)
+		createdLeaseContract.Id = createdLeaseContractId
 		plc.createdLeaseContract = &createdLeaseContract
+	} else {
+		plc.inMemoryData.CreateLeaseContract(*plc.createdLeaseContract)
 	}
 	return true
 }

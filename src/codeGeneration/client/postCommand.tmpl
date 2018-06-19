@@ -1,0 +1,37 @@
+package command
+
+{{ $pascalCased := .Entity | PascalCase }}
+{{ $camelCased  := .Entity | CamelCase }}
+
+type Post{{ $pascalCased }} struct {
+	inMemoryData         *inMemoryDatabase.InMemoryDatabase
+	creatorFunction      func(inMemoryDatabase.InMemoryDatabase) domain.{{ $pascalCased }}
+	created{{ $pascalCased }} *domain.{{ $pascalCased }}
+}
+
+func CreatePost{{ $pascalCased }}(inMemoryData *inMemoryDatabase.InMemoryDatabase, creatorFunction func(inMemoryDatabase.InMemoryDatabase) domain.{{ $pascalCased }}) Command {
+	return &Post{{ $pascalCased }}{
+		inMemoryData:    inMemoryData,
+		creatorFunction: creatorFunction,
+	}
+}
+
+func (plc *Post{{ $pascalCased }}) Stage() bool {
+	if plc.created{{ $pascalCased }} == nil {
+		created{{ $pascalCased }}     := plc.creatorFunction(*plc.inMemoryData)
+		created{{ $pascalCased }}Id   := plc.inMemoryData.Create{{ $pascalCased }}(created{{ $pascalCased }})
+		created{{ $pascalCased }}.Id  = created{{ $pascalCased }}Id
+		plc.created{{ $pascalCased }} = &created{{ $pascalCased }}
+	} else {
+	    plc.inMemoryData.Create{{ $pascalCased }}(*plc.created{{ $pascalCased }})
+	}
+	return true
+}
+
+func (plc *Post{{ $pascalCased }}) Execute() {
+
+}
+
+func (plc *Post{{ $pascalCased }}) Undo() {
+	plc.inMemoryData.Delete{{ $pascalCased }}(plc.created{{ $pascalCased }}.Id)
+}

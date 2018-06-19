@@ -1,4 +1,4 @@
-package commands
+package command
 
 type CommandPipe struct {
 	stagedCommands []Command
@@ -37,4 +37,12 @@ func (cp *CommandPipe) Commit() {
 		stagedCommand.Execute()
 	}
 	cp.stagedCommands = make([]Command, 0, 0)
+}
+
+func (cp *CommandPipe) NumberOfStaged() int {
+	return len(cp.stagedCommands)
+}
+
+func (cp *CommandPipe) NumberOfUndone() int {
+	return len(cp.undoneCommands)
 }

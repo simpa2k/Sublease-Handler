@@ -1,0 +1,25 @@
+package command
+
+{{ $pascalCased := .Entity | PascalCase }}
+{{ $camelCased  := .Entity | CamelCase }}
+
+type List{{ $pascalCased }}s struct {
+	inMemoryDatabase inMemoryDatabase.InMemoryDatabase
+}
+
+func CreateList{{ $pascalCased }}s(inMemoryData inMemoryDatabase.InMemoryDatabase) Command {
+	return &List{{ $pascalCased }}s{
+		inMemoryDatabase: inMemoryData,
+	}
+}
+
+func (llc List{{ $pascalCased }}s) Stage() bool {
+	for _, {{ $camelCased }} := range llc.inMemoryDatabase.Get{{ $pascalCased }}s() {
+		fmt.Printf("%v\n", {{ $camelCased }})
+	}
+
+	return false
+}
+
+func (llc List{{ $pascalCased }}s) Execute() {}
+func (llc List{{ $pascalCased }}s) Undo()    {}
